@@ -1,0 +1,443 @@
+/**
+ * TS BNPL Digipay — تهران‌اسپیکر.
+ *
+ * بخش فرانت‌اند فقط از متغیرهای CSS قالب استفاده می‌کند، بدون رنگ هاردکد و
+ * بدون !important. بخش پیشخوان جدا و در پایین فایل است، چون متغیرهای قالب در
+ * wp-admin وجود ندارند.
+ */
+
+/* ==========================================================================
+   ۱. کارت قیمت — فرانت‌اند
+   ========================================================================== */
+
+.ts-bnpl,
+.ts-bnpl-modal {
+	--ts-bnpl-surface: var(--surface-card, var(--commerce-panel));
+	--ts-bnpl-raised: var(--surface-raised, var(--commerce-raised));
+	--ts-bnpl-subtle: var(--surface-subtle, var(--commerce-subtle));
+	--ts-bnpl-border: var(--border-subtle, var(--commerce-border));
+	--ts-bnpl-strong: var(--text-strong, var(--commerce-heading));
+	--ts-bnpl-body: var(--text-body, var(--commerce-text));
+	--ts-bnpl-muted: var(--text-muted, var(--commerce-muted));
+	--ts-bnpl-accent: var(--state-info, var(--content-link-color));
+	--ts-bnpl-accent-surface: var(--state-info-surface, var(--surface-subtle));
+	--ts-bnpl-overlay: var(--surface-overlay);
+	--ts-bnpl-shadow: var(--shadow-soft);
+	--ts-bnpl-ring: var(--focus-ring, currentColor);
+	--ts-bnpl-duration: var(--theme-motion-duration, 240ms);
+	--ts-bnpl-ease: var(--theme-motion-ease, ease);
+	--ts-bnpl-radius: 14px;
+}
+
+.ts-bnpl {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 14px 16px;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: var(--ts-bnpl-radius);
+	background: var(--ts-bnpl-surface);
+	color: var(--ts-bnpl-body);
+	text-align: right;
+}
+
+.ts-bnpl *,
+.ts-bnpl-modal * {
+	box-sizing: border-box;
+}
+
+.ts-bnpl__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-width: 0;
+}
+
+.ts-bnpl__label {
+	font-size: 0.875rem;
+	color: var(--ts-bnpl-muted);
+}
+
+.ts-bnpl__regular {
+	font-size: 0.9375rem;
+	color: var(--ts-bnpl-muted);
+	text-decoration-line: line-through;
+}
+
+.ts-bnpl__row--price {
+	justify-content: flex-start;
+}
+
+.ts-bnpl__price {
+	font-size: 1.5rem;
+	font-weight: 500;
+	line-height: 1.5;
+	color: var(--ts-bnpl-strong);
+}
+
+.ts-bnpl__unit {
+	font-size: 0.8125rem;
+	font-weight: 400;
+	color: var(--ts-bnpl-muted);
+}
+
+.ts-bnpl__price--html {
+	font-size: 1.25rem;
+}
+
+.ts-bnpl__price--html del {
+	font-size: 0.8125rem;
+	color: var(--ts-bnpl-muted);
+}
+
+/*
+ * حالت مستقل: قالب amazing قیمت نقدی را خودش رندر می‌کند، پس کارت ما فقط
+ * ردیف اقساط را دارد و خط جداکننده‌ی بالای آن لازم نیست.
+ */
+
+.ts-bnpl--standalone {
+	margin-top: 10px;
+	gap: 0;
+}
+
+.ts-bnpl--standalone .ts-bnpl__plan {
+	padding-top: 0;
+	border-top-width: 0;
+}
+
+/* ردیف سوم: طرح اقساط */
+
+.ts-bnpl__installment[hidden] {
+	display: none;
+}
+
+.ts-bnpl__plan {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-top: 12px;
+	border-top: 1px solid var(--ts-bnpl-border);
+}
+
+.ts-bnpl__icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
+	background: var(--ts-bnpl-accent-surface);
+	color: var(--ts-bnpl-accent);
+}
+
+.ts-bnpl__plan-text {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.ts-bnpl__plan-amount {
+	font-size: 1rem;
+	font-weight: 500;
+	color: var(--ts-bnpl-strong);
+}
+
+.ts-bnpl__plan-note {
+	font-size: 0.75rem;
+	line-height: 1.7;
+	color: var(--ts-bnpl-muted);
+}
+
+.ts-bnpl__help {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: 50%;
+	background: transparent;
+	color: var(--ts-bnpl-muted);
+	font-size: 0.8125rem;
+	line-height: 1;
+	cursor: pointer;
+	transition: color var(--ts-bnpl-duration) var(--ts-bnpl-ease), border-color var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+}
+
+.ts-bnpl__help:hover,
+.ts-bnpl__help:focus-visible {
+	border-color: var(--ts-bnpl-accent);
+	color: var(--ts-bnpl-accent);
+}
+
+.ts-bnpl__help:focus-visible {
+	outline: 2px solid var(--ts-bnpl-ring);
+	outline-offset: 2px;
+}
+
+/* ==========================================================================
+   ۲. مودال راهنما
+   ========================================================================== */
+
+.ts-bnpl-modal {
+	position: fixed;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	inset: 0;
+	padding: 16px;
+}
+
+.ts-bnpl-modal[hidden] {
+	display: none;
+}
+
+.ts-bnpl-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: var(--ts-bnpl-overlay);
+}
+
+.ts-bnpl-modal__dialog {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: min(560px, 100%);
+	max-height: min(85vh, 720px);
+	padding: 22px;
+	overflow-y: auto;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: var(--ts-bnpl-radius);
+	background: var(--ts-bnpl-surface);
+	box-shadow: var(--ts-bnpl-shadow);
+	color: var(--ts-bnpl-body);
+	text-align: right;
+}
+
+.ts-bnpl-modal__dialog:focus {
+	outline: none;
+}
+
+.ts-bnpl-modal__close {
+	position: absolute;
+	top: 14px;
+	inset-inline-end: 14px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: 50%;
+	background: var(--ts-bnpl-raised);
+	color: var(--ts-bnpl-muted);
+	cursor: pointer;
+}
+
+.ts-bnpl-modal__close:hover,
+.ts-bnpl-modal__close:focus-visible {
+	color: var(--ts-bnpl-strong);
+}
+
+.ts-bnpl-modal__close:focus-visible {
+	outline: 2px solid var(--ts-bnpl-ring);
+	outline-offset: 2px;
+}
+
+.ts-bnpl-modal__title {
+	margin: 0;
+	padding-inline-end: 38px;
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.9;
+	color: var(--ts-bnpl-strong);
+}
+
+.ts-bnpl-modal__body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	font-size: 0.9375rem;
+	line-height: 2.1;
+}
+
+.ts-bnpl-modal__body p {
+	margin: 0;
+}
+
+.ts-bnpl-modal__steps {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0;
+	padding-inline-start: 0;
+	padding-inline-end: 1.4em;
+	list-style-type: persian;
+	list-style-position: outside;
+}
+
+.ts-bnpl-modal__steps li {
+	padding-inline-start: 4px;
+}
+
+.ts-bnpl-modal__note {
+	padding: 12px 14px;
+	border-radius: 10px;
+	background: var(--ts-bnpl-subtle);
+	color: var(--ts-bnpl-body);
+	font-size: 0.875rem;
+}
+
+body.ts-bnpl-modal-open {
+	overflow: hidden;
+}
+
+/* شیت از پایین روی موبایل */
+
+@media (max-width: 640px) {
+
+	.ts-bnpl-modal {
+		align-items: flex-end;
+		padding: 0;
+	}
+
+	.ts-bnpl-modal__dialog {
+		width: 100%;
+		max-height: 88vh;
+		padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+		border-width: 0;
+		border-radius: 20px 20px 0 0;
+		animation: ts-bnpl-sheet-in var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+	}
+}
+
+@keyframes ts-bnpl-sheet-in {
+
+	from {
+		transform: translateY(100%);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.ts-bnpl-modal__dialog,
+	.ts-bnpl__help {
+		animation: none;
+		transition: none;
+	}
+}
+
+/* ==========================================================================
+   ۳. پیشخوان
+   متغیرهای قالب در wp-admin در دسترس نیستند، پس این بخش توکن‌های خودش را دارد.
+   ========================================================================== */
+
+.ts-bnpl-report {
+	--ts-bnpl-admin-surface: #fff;
+	--ts-bnpl-admin-border: #dcdcde;
+	--ts-bnpl-admin-text: #1d2327;
+	--ts-bnpl-admin-muted: #646970;
+	--ts-bnpl-admin-faint: #8c8f94;
+	--ts-bnpl-admin-danger: #b32d2e;
+	--ts-bnpl-admin-danger-surface: #fcf0f1;
+	--ts-bnpl-admin-warning-surface: #fcf9e8;
+}
+
+.ts-bnpl-report__summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 16px 0;
+}
+
+.ts-bnpl-report__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 160px;
+	padding: 12px 16px;
+	border: 1px solid var(--ts-bnpl-admin-border);
+	border-radius: 6px;
+	background: var(--ts-bnpl-admin-surface);
+}
+
+.ts-bnpl-report__stat-label {
+	color: var(--ts-bnpl-admin-muted);
+	font-size: 12px;
+}
+
+.ts-bnpl-report__stat-value {
+	color: var(--ts-bnpl-admin-text);
+	font-size: 20px;
+	font-weight: 600;
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+.ts-bnpl-report__table td {
+	vertical-align: middle;
+}
+
+.ts-bnpl-report__row--negative > td,
+.ts-bnpl-report__row--unknown > td {
+	background-color: var(--ts-bnpl-admin-danger-surface);
+}
+
+.ts-bnpl-report__row--zero > td {
+	background-color: var(--ts-bnpl-admin-warning-surface);
+}
+
+.ts-bnpl-report__warn {
+	margin-inline-end: 4px;
+	color: var(--ts-bnpl-admin-danger);
+}
+
+.ts-bnpl-report__attrs {
+	margin-top: 2px;
+	color: var(--ts-bnpl-admin-muted);
+	font-size: 12px;
+}
+
+.ts-bnpl-report__id {
+	color: var(--ts-bnpl-admin-faint);
+	font-size: 11px;
+}
+
+.ts-bnpl-report__empty {
+	max-width: 520px;
+	margin-top: 20px;
+}
+
+/* نشان سفارش اقساطی در لیست و جزئیات سفارش */
+
+.ts-bnpl-badge {
+	display: inline-block;
+	margin-inline-start: 6px;
+	padding: 1px 8px;
+	border: 1px solid #cfe4f0;
+	border-radius: 10px;
+	background: #eaf4fa;
+	color: #176a9b;
+	font-size: 11px;
+	font-weight: 400;
+	line-height: 1.8;
+	vertical-align: middle;
+}
+
+.ts-bnpl-order-flag {
+	margin-top: 8px;
+}
