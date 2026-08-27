@@ -21,6 +21,9 @@
 	--ts-bnpl-muted: var(--text-muted, var(--commerce-muted));
 	--ts-bnpl-accent: var(--state-info, var(--content-link-color));
 	--ts-bnpl-accent-surface: var(--state-info-surface, var(--surface-subtle));
+	--ts-bnpl-danger: var(--state-danger);
+	--ts-bnpl-danger-surface: var(--state-danger-surface);
+	--ts-bnpl-danger-text: var(--text-body, var(--commerce-text));
 	--ts-bnpl-overlay: var(--surface-overlay);
 	--ts-bnpl-shadow: var(--shadow-soft);
 	--ts-bnpl-ring: var(--focus-ring, currentColor);
@@ -121,16 +124,25 @@
 	border-top: 1px solid var(--ts-bnpl-border);
 }
 
+/* اسلات لوگوی دیجی‌پی. عرضش آزاد است چون لوگو یک وردمارک افقی است. */
+
 .ts-bnpl__icon {
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
-	width: 38px;
-	height: 38px;
+	min-width: 38px;
+	height: 34px;
+	padding: 0 9px;
 	border-radius: 10px;
 	background: var(--ts-bnpl-accent-surface);
-	color: var(--ts-bnpl-accent);
+}
+
+.ts-bnpl__icon img {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: 16px;
 }
 
 .ts-bnpl__plan-text {
@@ -165,10 +177,13 @@
 	border-radius: 50%;
 	background: transparent;
 	color: var(--ts-bnpl-muted);
-	font-size: 0.8125rem;
-	line-height: 1;
+	line-height: 0;
 	cursor: pointer;
 	transition: color var(--ts-bnpl-duration) var(--ts-bnpl-ease), border-color var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+}
+
+.ts-bnpl__help svg {
+	display: block;
 }
 
 .ts-bnpl__help:hover,
@@ -210,10 +225,10 @@
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 14px;
 	width: min(560px, 100%);
 	max-height: min(85vh, 720px);
-	padding: 22px;
+	padding: 26px 28px 28px;
 	overflow-y: auto;
 	border: 1px solid var(--ts-bnpl-border);
 	border-radius: var(--ts-bnpl-radius);
@@ -273,29 +288,47 @@
 
 .ts-bnpl-modal__body p {
 	margin: 0;
+	text-align: justify;
+	text-align-last: start;
 }
 
 .ts-bnpl-modal__steps {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 14px;
 	margin: 0;
 	padding-inline-start: 0;
-	padding-inline-end: 1.4em;
+	padding-inline-end: 1.9em;
 	list-style-type: persian;
 	list-style-position: outside;
 }
 
 .ts-bnpl-modal__steps li {
-	padding-inline-start: 4px;
+	padding-inline-start: 2px;
+	text-align: justify;
+	text-align-last: start;
 }
 
+.ts-bnpl-modal__steps li::marker {
+	color: var(--ts-bnpl-muted);
+	font-weight: 600;
+}
+
+/*
+ * بند آخر هشدار قیمت است. با ته‌رنگ قرمز و نوار کناری از بقیه جدا می‌شود تا
+ * کاربر قبل از انتخاب اقساط حتماً بخواندش.
+ */
+
 .ts-bnpl-modal__note {
-	padding: 12px 14px;
+	padding: 14px 16px;
 	border-radius: 10px;
-	background: var(--ts-bnpl-subtle);
-	color: var(--ts-bnpl-body);
+	border-inline-start: 3px solid var(--ts-bnpl-danger);
+	background: var(--ts-bnpl-danger-surface);
+	color: var(--ts-bnpl-danger-text);
 	font-size: 0.875rem;
+	line-height: 2;
+	text-align: justify;
+	text-align-last: start;
 }
 
 body.ts-bnpl-modal-open {

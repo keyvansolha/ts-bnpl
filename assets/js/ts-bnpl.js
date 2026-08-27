@@ -187,4 +187,45 @@
 
 		$form.on( 'reset_data.tsBnpl', hideInstallment );
 	} );
+
+	/*
+	 * تسویه‌حساب: بازمحاسبه‌ی مبالغ هنگام تعویض درگاه.
+	 *
+	 * ووکامرس با تعویض روش پرداخت، update_checkout را صدا نمی‌زند؛ فقط باکس
+	 * درگاه را باز و بسته می‌کند. برای همین قیمت اقساطی تا وقتی کاربر آدرس را
+	 * دست نمی‌زد اعمال نمی‌شد. رویداد payment_method_selected را که خود
+	 * ووکامرس روی body می‌زند می‌گیریم و بازمحاسبه را اجرا می‌کنیم.
+	 *
+	 * چون update_checkout دوباره باعث انتخاب درگاه و شلیک همین رویداد
+	 * می‌شود، مقدار قبلی نگه داشته می‌شود تا حلقه ایجاد نشود.
+	 */
+	$( function () {
+		var $checkout = $( 'form.checkout' );
+
+		if ( ! $checkout.length ) {
+			return;
+		}
+
+		function chosenMethod() {
+			return $( 'input[name="payment_method"]:checked' ).val() || '';
+		}
+
+		var lastMethod = chosenMethod();
+
+		$( document.body ).on( 'payment_method_selected.tsBnpl', function () {
+			var current = chosenMethod();
+
+			if ( current === lastMethod ) {
+				return;
+			}
+
+			lastMethod = current;
+			$( document.body ).trigger( 'update_checkout' );
+		} );
+
+		// پس از هر بازمحاسبه، مرجع را با وضعیت واقعی DOM هم‌تراز نگه می‌داریم.
+		$( document.body ).on( 'updated_checkout.tsBnpl', function () {
+			lastMethod = chosenMethod();
+		} );
+	} );
 }( jQuery ) );

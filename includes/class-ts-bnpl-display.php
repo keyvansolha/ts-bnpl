@@ -69,16 +69,27 @@ class TS_BNPL_Display {
 	 * @return void
 	 */
 	public static function enqueue_assets() {
-		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+		if ( ! function_exists( 'is_product' ) ) {
 			return;
 		}
 
-		wp_enqueue_style(
-			'ts-bnpl',
-			TS_BNPL_URL . 'assets/css/ts-bnpl.css',
-			array(),
-			TS_BNPL_VERSION
-		);
+		$is_product = is_product();
+
+		// در تسویه‌حساب فقط اسکریپت لازم است: بازمحاسبه‌ی مبالغ هنگام تعویض درگاه.
+		$is_checkout = function_exists( 'is_checkout' ) && is_checkout() && ! is_wc_endpoint_url( 'order-received' );
+
+		if ( ! $is_product && ! $is_checkout ) {
+			return;
+		}
+
+		if ( $is_product ) {
+			wp_enqueue_style(
+				'ts-bnpl',
+				TS_BNPL_URL . 'assets/css/ts-bnpl.css',
+				array(),
+				TS_BNPL_VERSION
+			);
+		}
 
 		wp_enqueue_script(
 			'ts-bnpl',
@@ -236,11 +247,15 @@ class TS_BNPL_Display {
 		ob_start();
 		?>
 		<div class="ts-bnpl__plan">
-			<span class="ts-bnpl__icon" aria-hidden="true">
-				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-					<rect x="3" y="5" width="18" height="16" rx="3"></rect>
-					<path d="M3 10h18M8 3v4M16 3v4"></path>
-				</svg>
+			<span class="ts-bnpl__icon">
+				<img
+					src="<?php echo esc_url( TS_BNPL_URL . 'assets/images/digipay.svg' ); ?>"
+					alt="<?php esc_attr_e( 'دیجی‌پی', 'ts-bnpl' ); ?>"
+					width="62"
+					height="16"
+					loading="lazy"
+					decoding="async"
+				/>
 			</span>
 
 			<span class="ts-bnpl__plan-text">
@@ -269,11 +284,23 @@ class TS_BNPL_Display {
 				</span>
 			</span>
 
+			<?php
+			/*
+			 * علامت سؤال به صورت SVG کشیده می‌شود نه نویسه‌ی «؟».
+			 * آن نویسه در محیط راست‌به‌چپ بِرینگ نامتقارن دارد و هرچه فلکس را
+			 * تنظیم کنیم کمی از مرکز دایره خارج می‌ماند.
+			 */
+			?>
 			<button type="button"
 				class="ts-bnpl__help"
 				aria-label="<?php esc_attr_e( 'راهنمای خرید اقساطی با دیجی‌پی', 'ts-bnpl' ); ?>"
 				aria-haspopup="dialog"
-				aria-controls="<?php echo esc_attr( self::MODAL_ID ); ?>">؟</button>
+				aria-controls="<?php echo esc_attr( self::MODAL_ID ); ?>">
+				<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true">
+					<path d="M9.2 9.3a2.9 2.9 0 1 1 4.05 2.66c-.77.36-1.25 1.13-1.25 1.98v.31"></path>
+					<path d="M12 17.6h.01"></path>
+				</svg>
+			</button>
 		</div>
 		<?php
 
