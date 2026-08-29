@@ -142,6 +142,54 @@
 		}
 	}
 
+	/**
+	 * پنل آکاردئون متعلق به یک تیزر.
+	 *
+	 * @param {Element} button دکمه‌ی تیزر.
+	 * @return {Element|null} پنل.
+	 */
+	function panelOf( button ) {
+		var offer = button.closest ? button.closest( '.ts-bnpl__offer' ) : null;
+
+		return offer ? offer.querySelector( '.ts-bnpl__panel' ) : null;
+	}
+
+	// حالت آکاردئون: جزئیات فقط با کلیک کاربر باز می‌شود.
+	$( document ).on( 'click.tsBnpl', '[data-ts-bnpl-toggle]', function ( event ) {
+		event.preventDefault();
+
+		var panel = panelOf( this );
+
+		if ( ! panel ) {
+			return;
+		}
+
+		var willOpen = panel.hasAttribute( 'hidden' );
+
+		if ( willOpen ) {
+			panel.removeAttribute( 'hidden' );
+		} else {
+			panel.setAttribute( 'hidden', '' );
+		}
+
+		this.setAttribute( 'aria-expanded', willOpen ? 'true' : 'false' );
+	} );
+
+	// حالت مودال: تیزر خودش پنل راهنما را باز می‌کند و جزئیات را داخلش می‌گذارد.
+	$( document ).on( 'click.tsBnpl', '[data-ts-bnpl-open]', function ( event ) {
+		event.preventDefault();
+
+		var offer = this.closest ? this.closest( '.ts-bnpl__offer' ) : null;
+		var source = offer ? offer.querySelector( '.ts-bnpl__plan-source' ) : null;
+		var slot = modal ? modal.querySelector( '.ts-bnpl-modal__plan' ) : null;
+
+		if ( slot ) {
+			slot.innerHTML = source ? source.innerHTML : '';
+		}
+
+		openModal( this );
+	} );
+
 	// دکمه‌ی «؟» با هر تغییر variation دوباره ساخته می‌شود، پس رویداد واگذارشده است.
 	$( document ).on( 'click.tsBnpl', '.ts-bnpl__help', function ( event ) {
 		event.preventDefault();

@@ -23,6 +23,29 @@ class TS_BNPL_Display {
 	const MODAL_ID = 'ts-bnpl-modal';
 
 	/**
+	 * کلید آپشن تنظیمات نمایش.
+	 */
+	const OPTION = 'ts_bnpl_settings';
+
+	/**
+	 * حالت آکاردئون: جزئیات با باز شدن همان‌جا نمایش داده می‌شود.
+	 */
+	const MODE_ACCORDION = 'accordion';
+
+	/**
+	 * حالت مودال: جزئیات داخل پنل راهنما، بالای بخش توضیحات.
+	 */
+	const MODE_MODAL = 'modal';
+
+	/**
+	 * متن پیش‌فرض تیزر.
+	 *
+	 * عمداً نه مبلغ قسط دارد، نه نام ارائه‌دهنده. خرید نقدی باید CTA اصلی
+	 * صفحه بماند و خرید اعتباری فقط پس از کلیک کاربر باز شود.
+	 */
+	const DEFAULT_TEASER = 'امکان خرید ۴ قسطه این کالا از تهران‌اسپیکر';
+
+	/**
 	 * ثبت هوک‌ها.
 	 *
 	 * @return void
@@ -33,6 +56,87 @@ class TS_BNPL_Display {
 		add_filter( 'woocommerce_available_variation', array( __CLASS__, 'add_variation_data' ), 10, 3 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'render_modal' ) );
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| تنظیمات نمایش
+	|--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * تنظیمات ذخیره‌شده به همراه پیش‌فرض‌ها.
+	 *
+	 * @return array{mode:string,teaser:string}
+	 */
+	public static function get_settings() {
+		$stored = get_option( self::OPTION, array() );
+		$stored = is_array( $stored ) ? $stored : array();
+
+		$mode = isset( $stored['mode'] ) ? (string) $stored['mode'] : self::MODE_ACCORDION;
+
+		if ( ! in_array( $mode, self::modes(), true ) ) {
+			$mode = self::MODE_ACCORDION;
+		}
+
+		$teaser = isset( $stored['teaser'] ) ? trim( (string) $stored['teaser'] ) : '';
+
+		return array(
+			'mode'   => $mode,
+			'teaser' => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+		);
+	}
+
+	/**
+	 * حالت‌های مجاز نمایش.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function modes() {
+		return array( self::MODE_ACCORDION, self::MODE_MODAL );
+	}
+
+	/**
+	 * ذخیره‌ی تنظیمات.
+	 *
+	 * @param string $mode   یکی از modes().
+	 * @param string $teaser متن تیزر.
+	 *
+	 * @return void
+	 */
+	public static function update_settings( $mode, $teaser ) {
+		$mode   = in_array( $mode, self::modes(), true ) ? $mode : self::MODE_ACCORDION;
+		$teaser = trim( wp_strip_all_tags( (string) $teaser ) );
+
+		update_option(
+			self::OPTION,
+			array(
+				'mode'   => $mode,
+				'teaser' => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+			)
+		);
+	}
+
+	/**
+	 * حالت نمایش جاری.
+	 *
+	 * @return string
+	 */
+	public static function get_mode() {
+		$settings = self::get_settings();
+
+		return (string) apply_filters( 'ts_bnpl_display_mode', $settings['mode'] );
+	}
+
+	/**
+	 * متن تیزر جاری.
+	 *
+	 * @return string
+	 */
+	public static function get_teaser_text() {
+		$settings = self::get_settings();
+
+		return (string) apply_filters( 'ts_bnpl_teaser_text', $settings['teaser'] );
 	}
 
 	/**
@@ -178,7 +282,7 @@ class TS_BNPL_Display {
 			<div id="<?php echo esc_attr( self::CONTAINER_ID ); ?>" class="ts-bnpl__installment"<?php echo ( $is_variable || ! $has_installment ) ? ' hidden' : ''; ?>>
 				<?php
 				if ( $has_installment ) {
-					echo self::installment_row_html( $installment_total ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود.
+					echo self::teaser_html( $installment_total ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود.
 				}
 				?>
 			</div>
@@ -220,12 +324,15 @@ class TS_BNPL_Display {
 		printf(
 			'<div class="ts-bnpl ts-bnpl--standalone" dir="rtl"><div id="%1$s" class="ts-bnpl__installment">%2$s</div></div>',
 			esc_attr( self::CONTAINER_ID ),
-			self::installment_row_html( $total ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود.
+			self::teaser_html( $total ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود.
 		);
 	}
 
 	/**
-	 * ساخت مارک‌آپ ردیف سوم (طرح اقساط).
+	 * ساخت مارک‌آپ تیزر خرید اعتباری.
+	 *
+	 * خرید اعتباری یک گزینه‌ی ثانویه است: تا کاربر کلیک نکند، مبلغ قسط و نام
+	 * ارائه‌دهنده دیده نمی‌شود. دو حالت دارد و از پیشخوان قابل تعویض است.
 	 *
 	 * همین مارک‌آپ در داده‌ی هر variation با کلید bnpl_html قرار می‌گیرد.
 	 *
@@ -233,7 +340,75 @@ class TS_BNPL_Display {
 	 *
 	 * @return string
 	 */
-	public static function installment_row_html( $total ) {
+	public static function teaser_html( $total ) {
+		$total = (float) $total;
+
+		if ( $total <= 0 ) {
+			return '';
+		}
+
+		$is_modal = self::MODE_MODAL === self::get_mode();
+		$teaser   = self::get_teaser_text();
+
+		ob_start();
+		?>
+		<div class="ts-bnpl__offer ts-bnpl__offer--<?php echo esc_attr( $is_modal ? 'modal' : 'accordion' ); ?>">
+			<button type="button"
+				class="ts-bnpl__teaser"
+				<?php if ( $is_modal ) : ?>
+					data-ts-bnpl-open
+					aria-haspopup="dialog"
+					aria-controls="<?php echo esc_attr( self::MODAL_ID ); ?>"
+				<?php else : ?>
+					data-ts-bnpl-toggle
+					aria-expanded="false"
+				<?php endif; ?>
+				>
+				<span class="ts-bnpl__teaser-icon" aria-hidden="true">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+						<rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect>
+						<path d="M2.5 10h19M6 14.5h3"></path>
+					</svg>
+				</span>
+
+				<span class="ts-bnpl__teaser-text"><?php echo esc_html( $teaser ); ?></span>
+
+				<?php if ( $is_modal ) : ?>
+					<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'جزئیات', 'ts-bnpl' ); ?></span>
+				<?php else : ?>
+					<span class="ts-bnpl__teaser-chevron" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+							<path d="m6 9 6 6 6-6"></path>
+						</svg>
+					</span>
+				<?php endif; ?>
+			</button>
+
+			<?php if ( $is_modal ) : ?>
+				<?php /* منبع پنهان: جاوااسکریپت هنگام باز شدن آن را داخل مودال کپی می‌کند تا با variation جاری بخواند. */ ?>
+				<div class="ts-bnpl__plan-source" hidden>
+					<?php echo self::installment_row_html( $total, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود. ?>
+				</div>
+			<?php else : ?>
+				<div class="ts-bnpl__panel" hidden>
+					<?php echo self::installment_row_html( $total, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود. ?>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * ساخت مارک‌آپ ردیف طرح اقساط.
+	 *
+	 * @param float $total     مبلغ کل اقساطی.
+	 * @param bool  $with_help آیا دکمه‌ی راهنما هم رندر شود.
+	 *
+	 * @return string
+	 */
+	public static function installment_row_html( $total, $with_help = true ) {
 		$total = (float) $total;
 
 		if ( $total <= 0 ) {
@@ -289,8 +464,12 @@ class TS_BNPL_Display {
 			 * علامت سؤال به صورت SVG کشیده می‌شود نه نویسه‌ی «؟».
 			 * آن نویسه در محیط راست‌به‌چپ بِرینگ نامتقارن دارد و هرچه فلکس را
 			 * تنظیم کنیم کمی از مرکز دایره خارج می‌ماند.
+			 *
+			 * در حالت مودال این دکمه رندر نمی‌شود، چون خودِ ردیف داخل همان
+			 * مودال نشسته است.
 			 */
 			?>
+			<?php if ( $with_help ) : ?>
 			<button type="button"
 				class="ts-bnpl__help"
 				aria-label="<?php esc_attr_e( 'راهنمای خرید اقساطی با دیجی‌پی', 'ts-bnpl' ); ?>"
@@ -301,6 +480,7 @@ class TS_BNPL_Display {
 					<path d="M12 17.6h.01"></path>
 				</svg>
 			</button>
+			<?php endif; ?>
 		</div>
 		<?php
 
@@ -328,7 +508,7 @@ class TS_BNPL_Display {
 		$total = TS_BNPL_Data::get( $variation );
 
 		$data['bnpl_total'] = $total;
-		$data['bnpl_html']  = $total > 0 ? self::installment_row_html( $total ) : '';
+		$data['bnpl_html']  = $total > 0 ? self::teaser_html( $total ) : '';
 
 		return $data;
 	}
@@ -403,6 +583,11 @@ class TS_BNPL_Display {
 				<h2 class="ts-bnpl-modal__title" id="<?php echo esc_attr( self::MODAL_ID ); ?>-title">
 					<?php esc_html_e( 'خرید اقساطی با دیجی‌پی چگونه انجام می‌شود؟', 'ts-bnpl' ); ?>
 				</h2>
+
+				<?php if ( self::MODE_MODAL === self::get_mode() ) : ?>
+					<?php /* جزئیات طرح، بالای توضیحات. جاوااسکریپت آن را از تیزرِ variation جاری پر می‌کند تا با تعویض رنگ به‌روز بماند. */ ?>
+					<div class="ts-bnpl-modal__plan"></div>
+				<?php endif; ?>
 
 				<div class="ts-bnpl-modal__body">
 					<p><?php esc_html_e( 'اگر امکان پرداخت نقدی ندارید، می‌توانید با استفاده از سرویس اعتباری دیجی‌پی محصول را همین امروز دریافت کنید و هزینه آن را طی ۴ ماه پرداخت کنید.', 'ts-bnpl' ); ?></p>

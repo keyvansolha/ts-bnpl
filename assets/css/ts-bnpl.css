@@ -97,24 +97,99 @@
 
 /*
  * حالت مستقل: قالب amazing قیمت نقدی را خودش رندر می‌کند، پس کارت ما فقط
- * ردیف اقساط را دارد و خط جداکننده‌ی بالای آن لازم نیست.
+ * بخش اعتباری را دارد و کادر از خودِ تیزر می‌آید نه از این پوسته.
  */
 
 .ts-bnpl--standalone {
 	margin-top: 10px;
+	padding: 0;
 	gap: 0;
+	border-width: 0;
+	background: none;
 }
-
-.ts-bnpl--standalone .ts-bnpl__plan {
-	padding-top: 0;
-	border-top-width: 0;
-}
-
-/* ردیف سوم: طرح اقساط */
 
 .ts-bnpl__installment[hidden] {
 	display: none;
 }
+
+/* ==========================================================================
+   ۱.۱ تیزر خرید اعتباری
+   خرید نقدی CTA اصلی صفحه است. این بخش عمداً کم‌رنگ و جمع است و تا کاربر
+   کلیک نکند نه مبلغ قسط را نشان می‌دهد نه نام ارائه‌دهنده را.
+   ========================================================================== */
+
+.ts-bnpl__offer {
+	overflow: hidden;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: 12px;
+	background: var(--ts-bnpl-surface);
+}
+
+.ts-bnpl__teaser {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	margin: 0;
+	padding: 11px 13px;
+	border: 0;
+	background: transparent;
+	color: var(--ts-bnpl-body);
+	font: inherit;
+	font-size: 0.8125rem;
+	font-weight: 400;
+	line-height: 1.9;
+	text-align: right;
+	cursor: pointer;
+	transition: background var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+}
+
+.ts-bnpl__teaser:hover {
+	background: var(--ts-bnpl-raised);
+}
+
+.ts-bnpl__teaser:focus-visible {
+	outline: 2px solid var(--ts-bnpl-ring);
+	outline-offset: -2px;
+}
+
+.ts-bnpl__teaser-icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--ts-bnpl-muted);
+}
+
+.ts-bnpl__teaser-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.ts-bnpl__teaser-more {
+	flex: 0 0 auto;
+	color: var(--ts-bnpl-accent);
+	font-size: 0.75rem;
+}
+
+.ts-bnpl__teaser-chevron {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--ts-bnpl-muted);
+	transition: transform var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+}
+
+.ts-bnpl__teaser[aria-expanded="true"] .ts-bnpl__teaser-chevron {
+	transform: rotate(180deg);
+}
+
+.ts-bnpl__panel {
+	padding: 0 13px 13px;
+}
+
+.ts-bnpl__panel[hidden] {
+	display: none;
+}
+
+/* ردیف طرح اقساط */
 
 .ts-bnpl__plan {
 	display: flex;
@@ -269,6 +344,19 @@
 	outline-offset: 2px;
 }
 
+/* جزئیات طرح داخل مودال، بالای توضیحات */
+
+.ts-bnpl-modal__plan:empty {
+	display: none;
+}
+
+.ts-bnpl-modal__plan .ts-bnpl__plan {
+	padding: 14px;
+	border: 1px solid var(--ts-bnpl-border);
+	border-radius: 10px;
+	background: var(--ts-bnpl-raised);
+}
+
 .ts-bnpl-modal__title {
 	margin: 0;
 	padding-inline-end: 38px;
@@ -354,6 +442,35 @@ body.ts-bnpl-modal-open {
 	}
 }
 
+/* روی نمایشگرهای باریک، ردیف طرح می‌شکند تا مبلغ و نوشته له نشوند. */
+
+@media (max-width: 400px) {
+
+	.ts-bnpl__plan {
+		flex-wrap: wrap;
+		row-gap: 8px;
+	}
+
+	.ts-bnpl__plan-text {
+		flex: 1 1 100%;
+		order: 3;
+	}
+
+	.ts-bnpl__help {
+		margin-inline-start: auto;
+	}
+
+	.ts-bnpl__teaser {
+		align-items: flex-start;
+		line-height: 1.8;
+	}
+
+	.ts-bnpl__teaser-icon,
+	.ts-bnpl__teaser-chevron {
+		margin-top: 3px;
+	}
+}
+
 @keyframes ts-bnpl-sheet-in {
 
 	from {
@@ -388,6 +505,60 @@ body.ts-bnpl-modal-open {
 	--ts-bnpl-admin-danger: #b32d2e;
 	--ts-bnpl-admin-danger-surface: #fcf0f1;
 	--ts-bnpl-admin-warning-surface: #fcf9e8;
+}
+
+.ts-bnpl-report__settings {
+	max-width: 720px;
+	margin: 18px 0;
+	padding: 14px 18px 4px;
+	border: 1px solid var(--ts-bnpl-admin-border);
+	border-radius: 6px;
+	background: var(--ts-bnpl-admin-surface);
+}
+
+.ts-bnpl-report__settings h2 {
+	margin: 0 0 4px;
+	font-size: 14px;
+}
+
+.ts-bnpl-report__settings > .description {
+	margin: 0 0 12px;
+}
+
+.ts-bnpl-report__modes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 0 0 14px;
+}
+
+.ts-bnpl-report__modes label {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	flex: 1 1 260px;
+	gap: 2px 8px;
+	padding: 10px 12px;
+	border: 1px solid var(--ts-bnpl-admin-border);
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.ts-bnpl-report__modes input {
+	grid-row: 1 / span 2;
+	margin: 3px 0 0;
+}
+
+.ts-bnpl-report__modes span {
+	color: var(--ts-bnpl-admin-muted);
+	font-size: 12px;
+	line-height: 1.8;
+}
+
+.ts-bnpl-report__teaser-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0 0 6px;
 }
 
 .ts-bnpl-report__summary {

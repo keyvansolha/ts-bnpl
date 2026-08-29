@@ -38,6 +38,11 @@ class TS_BNPL_Report {
 	const EXPORT_ACTION = 'ts_bnpl_export';
 
 	/**
+	 * اکشن admin-post برای ذخیره‌ی تنظیمات نمایش.
+	 */
+	const SETTINGS_ACTION = 'ts_bnpl_save_settings';
+
+	/**
 	 * ثبت هوک‌ها.
 	 *
 	 * @return void
@@ -46,6 +51,7 @@ class TS_BNPL_Report {
 		add_action( 'admin_menu', array( __CLASS__, 'register_page' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'admin_post_' . self::EXPORT_ACTION, array( __CLASS__, 'handle_export' ) );
+		add_action( 'admin_post_' . self::SETTINGS_ACTION, array( __CLASS__, 'handle_settings_save' ) );
 	}
 
 	/**
@@ -310,6 +316,15 @@ class TS_BNPL_Report {
 			<?php endif; ?>
 			<hr class="wp-header-end">
 
+			<?php
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- فقط برای نمایش پیام.
+			if ( isset( $_GET['ts-bnpl-saved'] ) ) :
+				?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'تنظیمات نمایش ذخیره شد.', 'ts-bnpl' ); ?></p></div>
+			<?php endif; ?>
+
+			<?php self::render_settings_box(); ?>
+
 			<?php if ( 0 === $total ) : ?>
 				<div class="ts-bnpl-report__empty notice notice-info inline">
 					<p><?php esc_html_e( 'هنوز هیچ محصولی قیمت اقساطی ندارد.', 'ts-bnpl' ); ?></p>
@@ -383,6 +398,77 @@ class TS_BNPL_Report {
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * جعبه‌ی تنظیمات نمایش خرید اعتباری در صفحه‌ی محصول.
+	 *
+	 * @return void
+	 */
+	private static function render_settings_box() {
+		$settings = TS_BNPL_Display::get_settings();
+		?>
+		<form class="ts-bnpl-report__settings" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::SETTINGS_ACTION ); ?>" />
+			<?php wp_nonce_field( self::SETTINGS_ACTION ); ?>
+
+			<h2><?php esc_html_e( 'نمایش در صفحه‌ی محصول', 'ts-bnpl' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'خرید نقدی همیشه گزینه‌ی اصلی صفحه می‌ماند. مبلغ قسط و نام دیجی‌پی فقط پس از کلیک کاربر نمایش داده می‌شود.', 'ts-bnpl' ); ?>
+			</p>
+
+			<fieldset class="ts-bnpl-report__modes">
+				<label>
+					<input type="radio" name="mode" value="<?php echo esc_attr( TS_BNPL_Display::MODE_ACCORDION ); ?>" <?php checked( $settings['mode'], TS_BNPL_Display::MODE_ACCORDION ); ?> />
+					<strong><?php esc_html_e( 'بازشونده', 'ts-bnpl' ); ?></strong>
+					<span><?php esc_html_e( 'با کلیک، جزئیات همان‌جا زیر متن باز می‌شود. راهنمای کامل با دکمه‌ی «؟».', 'ts-bnpl' ); ?></span>
+				</label>
+				<label>
+					<input type="radio" name="mode" value="<?php echo esc_attr( TS_BNPL_Display::MODE_MODAL ); ?>" <?php checked( $settings['mode'], TS_BNPL_Display::MODE_MODAL ); ?> />
+					<strong><?php esc_html_e( 'پنل راهنما', 'ts-bnpl' ); ?></strong>
+					<span><?php esc_html_e( 'با کلیک، پنل راهنما باز می‌شود و جزئیات طرح بالای توضیحات نمایش داده می‌شود.', 'ts-bnpl' ); ?></span>
+				</label>
+			</fieldset>
+
+			<p class="ts-bnpl-report__teaser-field">
+				<label for="ts-bnpl-teaser"><strong><?php esc_html_e( 'متن قابل کلیک', 'ts-bnpl' ); ?></strong></label>
+				<input type="text" id="ts-bnpl-teaser" name="teaser" class="large-text" value="<?php echo esc_attr( $settings['teaser'] ); ?>" />
+				<span class="description"><?php esc_html_e( 'خالی بگذارید تا متن پیش‌فرض استفاده شود.', 'ts-bnpl' ); ?></span>
+			</p>
+
+			<?php submit_button( __( 'ذخیره‌ی تنظیمات', 'ts-bnpl' ), 'secondary', 'submit', true ); ?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * ذخیره‌ی تنظیمات نمایش.
+	 *
+	 * @return void
+	 */
+	public static function handle_settings_save() {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_die( esc_html__( 'شما اجازه‌ی دسترسی به این صفحه را ندارید.', 'ts-bnpl' ) );
+		}
+
+		check_admin_referer( self::SETTINGS_ACTION );
+
+		$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
+		$teaser = isset( $_POST['teaser'] ) ? sanitize_text_field( wp_unslash( $_POST['teaser'] ) ) : '';
+
+		TS_BNPL_Display::update_settings( $mode, $teaser );
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'post_type'     => 'product',
+					'page'          => self::PAGE_SLUG,
+					'ts-bnpl-saved' => '1',
+				),
+				admin_url( 'edit.php' )
+			)
+		);
+		exit;
 	}
 
 	/**
