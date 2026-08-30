@@ -1,0 +1,400 @@
+/**
+ * صفحه‌ی فرود خرید اعتباری.
+ *
+ * رنگ‌ها همه از توکن‌های قالب می‌آیند تا صفحه با بقیه‌ی سایت یکی بخواند و در
+ * تم روشن و تاریک درست بماند. هیچ رنگ ثابتی و هیچ !important اینجا نیست.
+ */
+
+.ts-bnpl-landing {
+	--ts-l-surface: var(--surface-card, #fff);
+	--ts-l-raised: var(--surface-raised, var(--surface-subtle, #f7f9fa));
+	--ts-l-subtle: var(--surface-subtle, #f3f6f8);
+	--ts-l-border: var(--border-subtle, #e3e9ed);
+	--ts-l-strong: var(--text-strong, var(--content-heading-color, #0d1d29));
+	--ts-l-body: var(--text-body, #2f3f4a);
+	--ts-l-muted: var(--text-muted, #6b7d8a);
+	--ts-l-accent: var(--commerce-accent, var(--theme-accent, #b6e30c));
+	--ts-l-on-accent: var(--commerce-on-accent, var(--text-on-accent, #09213a));
+	--ts-l-info: var(--state-info, #176a9b);
+	--ts-l-info-surface: var(--state-info-surface, #eaf4fa);
+	--ts-l-warn: var(--state-warning, #a85f00);
+	--ts-l-warn-surface: var(--state-warning-surface, #fff5e7);
+	--ts-l-ring: var(--focus-ring, currentColor);
+
+	display: flex;
+	flex-direction: column;
+	gap: 44px;
+	margin-top: 8px;
+	color: var(--ts-l-body);
+	font-size: 0.9375rem;
+	line-height: 2.1;
+	text-align: right;
+}
+
+.ts-bnpl-landing h2,
+.ts-bnpl-landing h3 {
+	margin: 0;
+	color: var(--ts-l-strong);
+	line-height: 1.7;
+}
+
+.ts-bnpl-landing p {
+	margin: 0;
+	text-align: justify;
+	text-align-last: start;
+}
+
+/* ============================ هیرو ============================ */
+
+.ts-bnpl-landing__hero {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 30px 28px;
+	border: 1px solid var(--ts-l-border);
+	border-radius: 18px;
+	background: var(--ts-l-info-surface);
+}
+
+.ts-bnpl-landing__eyebrow {
+	margin: 0;
+	color: var(--ts-l-info);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.ts-bnpl-landing__headline {
+	max-width: 44ch;
+	font-size: 1.5rem;
+}
+
+.ts-bnpl-landing__lede {
+	max-width: 70ch;
+	color: var(--ts-l-body);
+}
+
+.ts-bnpl-landing__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 6px;
+}
+
+.ts-bnpl-landing__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 22px;
+	border: 1px solid transparent;
+	border-radius: 10px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1;
+	text-decoration: none;
+	transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.ts-bnpl-landing__btn:hover {
+	filter: brightness(0.95);
+	text-decoration: none;
+}
+
+.ts-bnpl-landing__btn:focus-visible {
+	outline: 2px solid var(--ts-l-strong);
+	outline-offset: 2px;
+}
+
+.ts-bnpl-landing__btn--primary {
+	background: var(--ts-l-accent);
+	color: var(--ts-l-on-accent);
+}
+
+.ts-bnpl-landing__btn--ghost {
+	border-color: var(--ts-l-border);
+	background: var(--ts-l-surface);
+	color: var(--ts-l-strong);
+}
+
+/* ============================ بخش‌ها ============================ */
+
+.ts-bnpl-landing__section {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	scroll-margin-top: 90px;
+}
+
+.ts-bnpl-landing__title {
+	font-size: 1.25rem;
+}
+
+.ts-bnpl-landing__intro {
+	max-width: 70ch;
+	color: var(--ts-l-muted);
+}
+
+.ts-bnpl-landing__note {
+	padding: 13px 16px;
+	border-radius: 10px;
+	background: var(--ts-l-subtle);
+	color: var(--ts-l-muted);
+	font-size: 0.8125rem;
+}
+
+/* ============================ مراحل ============================ */
+
+.ts-bnpl-landing__steps {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 14px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	counter-reset: none;
+}
+
+.ts-bnpl-landing__step {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 20px 18px;
+	border: 1px solid var(--ts-l-border);
+	border-radius: 14px;
+	background: var(--ts-l-surface);
+}
+
+.ts-bnpl-landing__step-num {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: var(--ts-l-accent);
+	color: var(--ts-l-on-accent);
+	font-size: 0.875rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.ts-bnpl-landing__step-title {
+	font-size: 0.9375rem;
+}
+
+.ts-bnpl-landing__step-text {
+	color: var(--ts-l-muted);
+	font-size: 0.8125rem;
+	line-height: 2;
+}
+
+/* ==================== تشخیص کالای واجد شرایط ==================== */
+
+.ts-bnpl-landing__split {
+	display: grid;
+	grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+}
+
+.ts-bnpl-landing__split-text {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.ts-bnpl-landing__sample {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 20px 18px;
+	border: 1px dashed var(--ts-l-border);
+	border-radius: 14px;
+	background: var(--ts-l-raised);
+}
+
+.ts-bnpl-landing__sample-label {
+	color: var(--ts-l-muted);
+	font-size: 0.75rem;
+}
+
+.ts-bnpl-landing__sample-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 11px 13px;
+	border: 1px solid var(--ts-l-border);
+	border-radius: 12px;
+	background: var(--ts-l-surface);
+	color: var(--ts-l-body);
+	font-size: 0.8125rem;
+}
+
+/* ============================ هشدار قیمت ============================ */
+
+.ts-bnpl-landing__callout {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 22px 24px;
+	border: 1px solid var(--ts-l-border);
+	border-inline-start: 3px solid var(--ts-l-warn);
+	border-radius: 14px;
+	background: var(--ts-l-warn-surface);
+}
+
+.ts-bnpl-landing__callout-title {
+	font-size: 1.0625rem;
+}
+
+/* ============================ کاروسل ============================ */
+
+.ts-bnpl-landing__carousel {
+	position: relative;
+}
+
+/*
+ * ابعاد و فاصله‌ی کارت‌ها از خود قالب می‌آید؛ اینجا فقط ظرف را می‌سازیم تا
+ * کارت‌ها دقیقاً مثل بقیه‌ی سایت دربیایند.
+ */
+
+.ts-bnpl-landing__carousel .products-carousel {
+	overflow: hidden;
+}
+
+.ts-bnpl-landing__carousel.is-mobile .products-carousel {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	-webkit-overflow-scrolling: touch;
+}
+
+.ts-bnpl-landing__carousel.is-mobile .products-carousel > .item {
+	flex: 0 0 auto;
+	width: 45%;
+	min-width: 150px;
+	scroll-snap-align: start;
+}
+
+.ts-bnpl-landing__empty {
+	padding: 22px 20px;
+	border: 1px dashed var(--ts-l-border);
+	border-radius: 14px;
+	background: var(--ts-l-subtle);
+	color: var(--ts-l-muted);
+	text-align: center;
+	text-align-last: center;
+}
+
+/* ============================ پرسش‌ها ============================ */
+
+.ts-bnpl-landing__faq {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.ts-bnpl-landing__faq-item {
+	overflow: hidden;
+	border: 1px solid var(--ts-l-border);
+	border-radius: 12px;
+	background: var(--ts-l-surface);
+}
+
+.ts-bnpl-landing__faq-q {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 15px 18px;
+	color: var(--ts-l-strong);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	list-style: none;
+}
+
+.ts-bnpl-landing__faq-q::-webkit-details-marker {
+	display: none;
+}
+
+.ts-bnpl-landing__faq-q:focus-visible {
+	outline: 2px solid var(--ts-l-strong);
+	outline-offset: -2px;
+}
+
+.ts-bnpl-landing__faq-icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--ts-l-muted);
+	transition: transform 180ms ease;
+}
+
+.ts-bnpl-landing__faq-item[open] .ts-bnpl-landing__faq-icon {
+	transform: rotate(180deg);
+}
+
+.ts-bnpl-landing__faq-a {
+	padding: 0 18px 16px;
+	color: var(--ts-l-muted);
+	font-size: 0.8125rem;
+	line-height: 2;
+}
+
+/* ============================ فراخوان پایانی ============================ */
+
+.ts-bnpl-landing__final {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: center;
+	padding: 32px 26px;
+	border: 1px solid var(--ts-l-border);
+	border-radius: 18px;
+	background: var(--ts-l-raised);
+	text-align: center;
+}
+
+.ts-bnpl-landing__final p {
+	color: var(--ts-l-muted);
+	text-align: center;
+	text-align-last: center;
+}
+
+.ts-bnpl-landing__final-title {
+	font-size: 1.1875rem;
+}
+
+/* ============================ موبایل ============================ */
+
+@media (max-width: 768px) {
+
+	.ts-bnpl-landing {
+		gap: 32px;
+		line-height: 2;
+	}
+
+	.ts-bnpl-landing__hero {
+		padding: 22px 18px;
+		border-radius: 14px;
+	}
+
+	.ts-bnpl-landing__headline {
+		font-size: 1.1875rem;
+	}
+
+	.ts-bnpl-landing__split {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.ts-bnpl-landing__btn {
+		flex: 1 1 100%;
+	}
+
+	.ts-bnpl-landing__callout,
+	.ts-bnpl-landing__final {
+		padding: 20px 18px;
+	}
+}

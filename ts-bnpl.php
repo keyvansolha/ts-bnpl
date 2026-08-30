@@ -110,11 +110,13 @@ function ts_bnpl_bootstrap() {
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-report.php';
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-checkout.php';
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-display.php';
+	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-landing.php';
 
 	TS_BNPL_Data::init();
 	TS_BNPL_Admin::init();
 	TS_BNPL_Report::init();
 	TS_BNPL_Checkout::init();
 	TS_BNPL_Display::init();
+	TS_BNPL_Landing::init();
 }
 add_action( 'plugins_loaded', 'ts_bnpl_bootstrap', 20 );

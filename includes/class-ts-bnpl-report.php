@@ -428,6 +428,11 @@ class TS_BNPL_Report {
 					<strong><?php esc_html_e( 'پنل راهنما', 'ts-bnpl' ); ?></strong>
 					<span><?php esc_html_e( 'با کلیک، پنل راهنما باز می‌شود و جزئیات طرح بالای توضیحات نمایش داده می‌شود.', 'ts-bnpl' ); ?></span>
 				</label>
+				<label>
+					<input type="radio" name="mode" value="<?php echo esc_attr( TS_BNPL_Display::MODE_LANDING ); ?>" <?php checked( $settings['mode'], TS_BNPL_Display::MODE_LANDING ); ?> />
+					<strong><?php esc_html_e( 'صفحه‌ی فرود', 'ts-bnpl' ); ?></strong>
+					<span><?php esc_html_e( 'با کلیک، کاربر به صفحه‌ی راهنمای کامل خرید اعتباری می‌رود. نیازمند انتخاب صفحه در بخش پایین.', 'ts-bnpl' ); ?></span>
+				</label>
 			</fieldset>
 
 			<p class="ts-bnpl-report__teaser-field">
@@ -435,6 +440,42 @@ class TS_BNPL_Report {
 				<input type="text" id="ts-bnpl-teaser" name="teaser" class="large-text" value="<?php echo esc_attr( $settings['teaser'] ); ?>" />
 				<span class="description"><?php esc_html_e( 'خالی بگذارید تا متن پیش‌فرض استفاده شود.', 'ts-bnpl' ); ?></span>
 			</p>
+
+			<hr />
+
+			<h2><?php esc_html_e( 'صفحه‌ی فرود خرید اعتباری', 'ts-bnpl' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'یک برگه‌ی معمولی وردپرس بسازید و اینجا انتخابش کنید. افزونه محتوای کامل راهنما و کاروسل کالاهای واجد شرایط را روی همان یک برگه می‌سازد؛ لازم نیست چیزی داخلش بنویسید. عنوان برگه به‌عنوان تیتر صفحه استفاده می‌شود.', 'ts-bnpl' ); ?>
+			</p>
+
+			<p class="ts-bnpl-report__landing-field">
+				<label for="ts-bnpl-landing-page"><strong><?php esc_html_e( 'برگه‌ی فرود', 'ts-bnpl' ); ?></strong></label>
+				<?php
+				wp_dropdown_pages(
+					array(
+						'name'              => 'landing_page',
+						'id'                => 'ts-bnpl-landing-page',
+						'selected'          => (int) $settings['landing_page'],
+						'show_option_none'  => __( '— هیچ صفحه‌ای انتخاب نشده —', 'ts-bnpl' ),
+						'option_none_value' => '0',
+						'post_status'       => 'publish',
+					)
+				);
+				?>
+				<span class="description"><?php esc_html_e( 'با «هیچ صفحه‌ای»، هیچ برگه‌ای تغییر نمی‌کند و حالت صفحه‌ی فرود هم غیرفعال می‌ماند.', 'ts-bnpl' ); ?></span>
+			</p>
+
+			<?php
+			$landing_url = TS_BNPL_Landing::get_url();
+
+			if ( $landing_url ) :
+				?>
+				<p class="ts-bnpl-report__landing-link">
+					<a href="<?php echo esc_url( $landing_url ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'دیدن صفحه‌ی فرود', 'ts-bnpl' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
 
 			<?php submit_button( __( 'ذخیره‌ی تنظیمات', 'ts-bnpl' ), 'secondary', 'submit', true ); ?>
 		</form>
@@ -453,10 +494,16 @@ class TS_BNPL_Report {
 
 		check_admin_referer( self::SETTINGS_ACTION );
 
-		$mode   = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
-		$teaser = isset( $_POST['teaser'] ) ? sanitize_text_field( wp_unslash( $_POST['teaser'] ) ) : '';
+		$mode    = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : '';
+		$teaser  = isset( $_POST['teaser'] ) ? sanitize_text_field( wp_unslash( $_POST['teaser'] ) ) : '';
+		$landing = isset( $_POST['landing_page'] ) ? absint( wp_unslash( $_POST['landing_page'] ) ) : 0;
 
-		TS_BNPL_Display::update_settings( $mode, $teaser );
+		// فقط یک برگه‌ی منتشرشده پذیرفته می‌شود.
+		if ( $landing > 0 && 'page' !== get_post_type( $landing ) ) {
+			$landing = 0;
+		}
+
+		TS_BNPL_Display::update_settings( $mode, $teaser, $landing );
 
 		wp_safe_redirect(
 			add_query_arg(

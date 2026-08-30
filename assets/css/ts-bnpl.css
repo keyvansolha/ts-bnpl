@@ -164,6 +164,26 @@
 	min-width: 0;
 }
 
+/* حالت صفحه‌ی فرود: تیزر یک لینک است، پس زیرخط و رنگ لینک قالب را نگیرد. */
+
+a.ts-bnpl__teaser,
+a.ts-bnpl__teaser:hover,
+a.ts-bnpl__teaser:focus {
+	color: var(--ts-bnpl-body);
+	text-decoration: none;
+}
+
+.ts-bnpl__teaser-arrow {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--ts-bnpl-accent);
+	transition: transform var(--ts-bnpl-duration) var(--ts-bnpl-ease);
+}
+
+.ts-bnpl__teaser:hover .ts-bnpl__teaser-arrow {
+	transform: translateX(-3px);
+}
+
 .ts-bnpl__teaser-more {
 	flex: 0 0 auto;
 	color: var(--ts-bnpl-accent);
@@ -552,6 +572,17 @@ body.ts-bnpl-modal-open {
 	color: var(--ts-bnpl-admin-muted);
 	font-size: 12px;
 	line-height: 1.8;
+}
+
+.ts-bnpl-report__landing-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0 0 6px;
+}
+
+.ts-bnpl-report__landing-link {
+	margin: 0 0 6px;
 }
 
 .ts-bnpl-report__teaser-field {

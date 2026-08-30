@@ -38,6 +38,11 @@ class TS_BNPL_Display {
 	const MODE_MODAL = 'modal';
 
 	/**
+	 * حالت صفحه‌ی فرود: کلیک روی تیزر کاربر را به لندینگ خرید اعتباری می‌برد.
+	 */
+	const MODE_LANDING = 'landing';
+
+	/**
 	 * متن پیش‌فرض تیزر.
 	 *
 	 * عمداً نه مبلغ قسط دارد، نه نام ارائه‌دهنده. خرید نقدی باید CTA اصلی
@@ -82,8 +87,9 @@ class TS_BNPL_Display {
 		$teaser = isset( $stored['teaser'] ) ? trim( (string) $stored['teaser'] ) : '';
 
 		return array(
-			'mode'   => $mode,
-			'teaser' => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+			'mode'         => $mode,
+			'teaser'       => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+			'landing_page' => isset( $stored['landing_page'] ) ? absint( $stored['landing_page'] ) : 0,
 		);
 	}
 
@@ -93,7 +99,7 @@ class TS_BNPL_Display {
 	 * @return array<int,string>
 	 */
 	public static function modes() {
-		return array( self::MODE_ACCORDION, self::MODE_MODAL );
+		return array( self::MODE_ACCORDION, self::MODE_MODAL, self::MODE_LANDING );
 	}
 
 	/**
@@ -104,15 +110,16 @@ class TS_BNPL_Display {
 	 *
 	 * @return void
 	 */
-	public static function update_settings( $mode, $teaser ) {
+	public static function update_settings( $mode, $teaser, $landing_page = 0 ) {
 		$mode   = in_array( $mode, self::modes(), true ) ? $mode : self::MODE_ACCORDION;
 		$teaser = trim( wp_strip_all_tags( (string) $teaser ) );
 
 		update_option(
 			self::OPTION,
 			array(
-				'mode'   => $mode,
-				'teaser' => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+				'mode'         => $mode,
+				'teaser'       => '' !== $teaser ? $teaser : self::DEFAULT_TEASER,
+				'landing_page' => absint( $landing_page ),
 			)
 		);
 	}
@@ -124,8 +131,30 @@ class TS_BNPL_Display {
 	 */
 	public static function get_mode() {
 		$settings = self::get_settings();
+		$mode     = (string) apply_filters( 'ts_bnpl_display_mode', $settings['mode'] );
 
-		return (string) apply_filters( 'ts_bnpl_display_mode', $settings['mode'] );
+		/*
+		 * حالت لندینگ بدون صفحه‌ی انتخاب‌شده معنا ندارد؛ تیزر به جای لینک
+		 * مرده، به حالت بازشونده برمی‌گردد تا کاربر بی‌جواب نماند.
+		 */
+		if ( self::MODE_LANDING === $mode && '' === self::landing_url() ) {
+			return self::MODE_ACCORDION;
+		}
+
+		return $mode;
+	}
+
+	/**
+	 * نشانی صفحه‌ی فرود، اگر افزونه‌ی لندینگ فعال و صفحه‌ای انتخاب شده باشد.
+	 *
+	 * @return string
+	 */
+	public static function landing_url() {
+		if ( ! class_exists( 'TS_BNPL_Landing' ) ) {
+			return '';
+		}
+
+		return TS_BNPL_Landing::get_url();
 	}
 
 	/**
@@ -347,19 +376,41 @@ class TS_BNPL_Display {
 			return '';
 		}
 
-		$is_modal = self::MODE_MODAL === self::get_mode();
-		$teaser   = self::get_teaser_text();
+		$mode       = self::get_mode();
+		$is_modal   = self::MODE_MODAL === $mode;
+		$is_landing = self::MODE_LANDING === $mode;
+		$teaser     = self::get_teaser_text();
+
+		$variant = self::MODE_ACCORDION;
+
+		if ( $is_modal ) {
+			$variant = self::MODE_MODAL;
+		} elseif ( $is_landing ) {
+			$variant = self::MODE_LANDING;
+		}
 
 		ob_start();
 		?>
-		<div class="ts-bnpl__offer ts-bnpl__offer--<?php echo esc_attr( $is_modal ? 'modal' : 'accordion' ); ?>">
-			<button type="button"
+		<div class="ts-bnpl__offer ts-bnpl__offer--<?php echo esc_attr( $variant ); ?>">
+			<?php
+			/*
+			 * حالت لندینگ یک پیمایش واقعی است نه یک ویجت، پس عنصرش هم لینک
+			 * است نه دکمه: باز شدن در تب جدید، کپی کردن نشانی و خزنده‌ها
+			 * همگی درست کار می‌کنند.
+			 */
+			?>
+			<<?php echo $is_landing ? 'a' : 'button'; ?>
 				class="ts-bnpl__teaser"
+				<?php if ( $is_landing ) : ?>
+					href="<?php echo esc_url( self::landing_url() ); ?>"
+				<?php else : ?>
+					type="button"
+				<?php endif; ?>
 				<?php if ( $is_modal ) : ?>
 					data-ts-bnpl-open
 					aria-haspopup="dialog"
 					aria-controls="<?php echo esc_attr( self::MODAL_ID ); ?>"
-				<?php else : ?>
+				<?php elseif ( ! $is_landing ) : ?>
 					data-ts-bnpl-toggle
 					aria-expanded="false"
 				<?php endif; ?>
@@ -375,6 +426,13 @@ class TS_BNPL_Display {
 
 				<?php if ( $is_modal ) : ?>
 					<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'جزئیات', 'ts-bnpl' ); ?></span>
+				<?php elseif ( $is_landing ) : ?>
+					<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'بیشتر بدانید', 'ts-bnpl' ); ?></span>
+					<span class="ts-bnpl__teaser-arrow" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+							<path d="M15 18l-6-6 6-6"></path>
+						</svg>
+					</span>
 				<?php else : ?>
 					<span class="ts-bnpl__teaser-chevron" aria-hidden="true">
 						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
@@ -382,9 +440,11 @@ class TS_BNPL_Display {
 						</svg>
 					</span>
 				<?php endif; ?>
-			</button>
+			</<?php echo $is_landing ? 'a' : 'button'; ?>>
 
-			<?php if ( $is_modal ) : ?>
+			<?php if ( $is_landing ) : ?>
+				<?php /* در این حالت جزئیات روی خود لندینگ توضیح داده می‌شود. */ ?>
+			<?php elseif ( $is_modal ) : ?>
 				<?php /* منبع پنهان: جاوااسکریپت هنگام باز شدن آن را داخل مودال کپی می‌کند تا با variation جاری بخواند. */ ?>
 				<div class="ts-bnpl__plan-source" hidden>
 					<?php echo self::installment_row_html( $total, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود. ?>
@@ -526,6 +586,11 @@ class TS_BNPL_Display {
 	 */
 	private static function should_render_modal() {
 		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+			return false;
+		}
+
+		// در حالت لندینگ، تیزر یک لینک است و مودالی باز نمی‌شود.
+		if ( self::MODE_LANDING === self::get_mode() ) {
 			return false;
 		}
 

@@ -104,10 +104,13 @@ ts-bnpl/
 │   ├── class-ts-bnpl-admin.php       # فیلد تنظیمات محصول
 │   ├── class-ts-bnpl-report.php      # گزارش و تنظیمات جهانی
 │   ├── class-ts-bnpl-checkout.php    # هوک‌های درگاه و سفارش
-│   └── class-ts-bnpl-display.php     # رندر فرانت‌اند
+│   ├── class-ts-bnpl-display.php     # رندر فرانت‌اند
+│   └── class-ts-bnpl-landing.php     # صفحه‌ی فرود و کاروسل واجد شرایط
 ├── assets/
 │   ├── css/ts-bnpl.css
+│   ├── css/ts-bnpl-landing.css
 │   ├── js/ts-bnpl.js
+│   ├── js/ts-bnpl-landing.js
 │   └── images/digipay.svg
 ├── languages/                         # ترجمه‌ها
 ├── tests/                             # تست‌های قرارداد
