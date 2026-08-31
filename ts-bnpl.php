@@ -3,7 +3,7 @@
  * Plugin Name:       TS BNPL Digipay
  * Plugin URI:        https://www.tehranspeaker.com/
  * Description:       قیمت اقساطی محصولات و نمایش طرح ۴ قسطه دیجی‌پی روی فروشگاه تهران‌اسپیکر.
- * Version:           0.3.1
+ * Version:           0.4.0
  * Author:            Keyvan Havestin
  * Author URI:        https://keyvansolha.ir
  * Text Domain:       ts-bnpl
@@ -27,7 +27,19 @@ defined( 'ABSPATH' ) || exit;
 |
 */
 
-define( 'TS_BNPL_VERSION', '0.1.0' );
+/*
+ * نسخه از هدر خود افزونه خوانده می‌شود، نه دستی.
+ *
+ * این ثابت نسخه‌ی همه‌ی CSS و JS افزونه است. قبلاً یک عدد جدا بود و از هدر عقب
+ * افتاده بود (0.1.0 در برابر 0.3.1)، یعنی مرورگرها با هر انتشار همان فایل
+ * کش‌شده‌ی قدیمی را نگه می‌داشتند. با خواندن از هدر، دیگر نمی‌توانند از هم جدا
+ * بیفتند و فقط کافی است هدر بالا را بالا ببرید.
+ */
+$ts_bnpl_header = get_file_data( __FILE__, array( 'version' => 'Version' ), 'plugin' );
+
+define( 'TS_BNPL_VERSION', ! empty( $ts_bnpl_header['version'] ) ? $ts_bnpl_header['version'] : '0.0.0' );
+
+unset( $ts_bnpl_header );
 define( 'TS_BNPL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TS_BNPL_URL', plugin_dir_url( __FILE__ ) );
 
