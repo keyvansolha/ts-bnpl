@@ -539,20 +539,18 @@ class TS_BNPL_Landing {
 			return '';
 		}
 
-		$is_mobile = defined( 'IS_MOBILE' ) ? IS_MOBILE : wp_is_mobile();
-		$candidates = $is_mobile
-			? array( 'product-cards/simple-card-mobile.php', 'product-cards/simple-card.php' )
-			: array( 'product-cards/simple-card.php' );
+		/*
+		 * روی موبایل هم همین فایل استفاده می‌شود، نه simple-card-mobile.php.
+		 *
+		 * کاروسل‌های خود قالب هم در هر دو viewport همین را رندر می‌کنند، و CSS
+		 * ماژول کاروسل هم عرض اسلاید را روی `.item article` یعنی خروجی همین
+		 * فایل می‌گذارد. ضمناً هیچ‌کدام از دو شیت آرشیو کلاس
+		 * product-simple-mobile-card را استایل نمی‌کنند، پس آن فایل اینجا
+		 * کاملاً بی‌استایل و روی‌هم‌افتاده رندر می‌شد.
+		 */
+		$path = THEME_COMPONENTS . 'product-cards/simple-card.php';
 
-		foreach ( $candidates as $candidate ) {
-			$path = THEME_COMPONENTS . $candidate;
-
-			if ( file_exists( $path ) ) {
-				return $path;
-			}
-		}
-
-		return '';
+		return file_exists( $path ) ? $path : '';
 	}
 
 	/**
