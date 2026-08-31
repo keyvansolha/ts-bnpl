@@ -3,7 +3,7 @@
  * Plugin Name:       TS BNPL Digipay
  * Plugin URI:        https://www.tehranspeaker.com/
  * Description:       قیمت اقساطی محصولات و نمایش طرح ۴ قسطه دیجی‌پی روی فروشگاه تهران‌اسپیکر.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Author:            Keyvan Havestin
  * Author URI:        https://keyvansolha.ir
  * Text Domain:       ts-bnpl
