@@ -33,6 +33,12 @@
 	overflow-x: clip;
 }
 
+.ts-bnpl-landing a,
+.ts-bnpl-landing a:hover,
+.ts-bnpl-landing a:focus {
+	text-decoration: none;
+}
+
 .ts-bnpl-landing h2,
 .ts-bnpl-landing h3 {
 	margin: 0;
@@ -145,60 +151,24 @@
 }
 
 /*
- * دکمه‌ها عمداً هیچ حالت هاوری ندارند.
+ * دکمه‌ها همان .wbs-button خود سایت‌اند.
  *
- * هر تلاشی برای تغییر پس‌زمینه در هاور — چه تیره‌تر، چه روشن‌تر — روی سبز برند
- * با متن جوهر تیره، خوانایی را کم می‌کرد. رنگ در همه‌ی حالت‌ها ثابت می‌ماند؛
- * فقط نشانگر ماوس و حلقه‌ی فوکوس بازخورد می‌دهند.
+ * شکل قرصی، رنگ لایم روی جوهر سرمه‌ای، عرض کمینه و وزن فونت همه از
+ * archiveModular.css می‌آیند که بالاتر صف شده. کلاس button-no-hover هم
+ * سازوکار خود قالب برای خاموش کردن هاور است. اینجا فقط چیدمان تنظیم می‌شود؛
+ * هیچ رنگ، هاور یا زیرخطی تعریف نمی‌شود.
  */
 
-.ts-bnpl-landing__btn,
-.ts-bnpl-landing__btn:link,
-.ts-bnpl-landing__btn:visited,
-.ts-bnpl-landing__btn:hover,
-.ts-bnpl-landing__btn:focus,
-.ts-bnpl-landing__btn:active {
+.ts-bnpl-landing__btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 46px;
-	padding: 0 22px;
-	border: 1px solid transparent;
-	border-radius: 10px;
-	font-size: 0.875rem;
-	font-weight: 500;
-	line-height: 1;
+	gap: 6px;
 	text-align: center;
-	text-decoration: none;
-	cursor: pointer;
-	transition: none;
 }
 
-.ts-bnpl-landing__btn:focus-visible {
-	outline: 2px solid var(--ts-l-strong);
-	outline-offset: 2px;
-}
-
-.ts-bnpl-landing__btn--primary,
-.ts-bnpl-landing__btn--primary:link,
-.ts-bnpl-landing__btn--primary:visited,
-.ts-bnpl-landing__btn--primary:hover,
-.ts-bnpl-landing__btn--primary:focus,
-.ts-bnpl-landing__btn--primary:active {
-	border-color: var(--ts-l-accent);
-	background: var(--ts-l-accent);
-	color: var(--ts-l-on-accent);
-}
-
-.ts-bnpl-landing__btn--ghost,
-.ts-bnpl-landing__btn--ghost:link,
-.ts-bnpl-landing__btn--ghost:visited,
-.ts-bnpl-landing__btn--ghost:hover,
-.ts-bnpl-landing__btn--ghost:focus,
-.ts-bnpl-landing__btn--ghost:active {
-	border-color: var(--ts-l-border);
-	background: var(--ts-l-surface);
-	color: var(--ts-l-strong);
+.ts-bnpl-landing__btn--simple {
+	min-width: 0;
 }
 
 /* ============================ بخش‌ها ============================ */
@@ -350,14 +320,35 @@
 	text-decoration: none;
 }
 
-.ts-bnpl-landing__seeall a:hover,
-.ts-bnpl-landing__seeall a:focus {
-	text-decoration: underline;
-}
-
 .ts-bnpl-landing__carousel {
 	position: relative;
 	margin: 0;
+}
+
+/*
+ * CSS ماژول قالب به اسلایدها margin-left: 20px می‌دهد و سوایپر هم برای
+ * spaceBetween مارجین اینلاین می‌نویسد. این دو روی هم جمع می‌شدند و فاصله‌ها
+ * دوبرابر می‌شد، پس کارت‌ها جا نمی‌گرفتند و به هم می‌ریختند. فاصله را فقط به
+ * سوایپر می‌سپاریم.
+ */
+
+.ts-bnpl-landing__carousel .products-carousel .swiper-wrapper .swiper-slide {
+	margin-left: 0;
+	height: auto;
+}
+
+/*
+ * در آرشیو، کارت‌ها داخل گرید هستند و هم‌قد می‌شوند. در کاروسل باید همان را
+ * صریح بخواهیم، وگرنه هر کارت به اندازه‌ی محتوای خودش کوتاه و بلند می‌شود.
+ */
+
+.ts-bnpl-landing__carousel .products-carousel .swiper-wrapper {
+	align-items: stretch;
+}
+
+.ts-bnpl-landing__carousel .swiper-slide > article,
+.ts-bnpl-landing__carousel .products-carousel > .item > article {
+	height: 100%;
 }
 
 /* دکمه‌های ناوبری روی موبایل جایی ندارند؛ آنجا اسکرول لمسی است. */
@@ -541,7 +532,6 @@
 	}
 
 	.ts-bnpl-landing__btn {
-		padding: 0 14px;
 		font-size: 0.8125rem;
 	}
 

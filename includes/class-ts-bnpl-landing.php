@@ -291,10 +291,10 @@ class TS_BNPL_Landing {
 
 			<div class="ts-bnpl-landing__actions">
 				<?php /* فهرست کامل در آرشیو فروشگاه باز می‌شود، با مرتب‌سازی و فیلترهای همیشگی. */ ?>
-				<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="<?php echo esc_url( $shop ? $shop : '#' . self::PRODUCTS_ANCHOR ); ?>">
+				<a class="wbs-button button-no-hover ts-bnpl-landing__btn" href="<?php echo esc_url( $shop ? $shop : '#' . self::PRODUCTS_ANCHOR ); ?>">
 					<?php esc_html_e( 'مشاهده محصولاتی که قابلیت خرید اعتباری دارند', 'ts-bnpl' ); ?>
 				</a>
-				<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--ghost" href="#ts-bnpl-how">
+				<a class="wbs-button button-simple button-no-hover ts-bnpl-landing__btn ts-bnpl-landing__btn--simple" href="#ts-bnpl-how">
 					<?php esc_html_e( 'مراحل خرید', 'ts-bnpl' ); ?>
 				</a>
 			</div>
@@ -812,11 +812,11 @@ class TS_BNPL_Landing {
 				<h2 class="ts-bnpl-landing__final-title"><?php esc_html_e( 'آماده‌ی شروع هستید؟', 'ts-bnpl' ); ?></h2>
 				<p><?php esc_html_e( 'کالاهای واجد شرایط را ببینید و خریدتان را مثل همیشه شروع کنید.', 'ts-bnpl' ); ?></p>
 				<div class="ts-bnpl-landing__actions">
-					<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="<?php echo esc_url( $filtered ? $filtered : '#' . self::PRODUCTS_ANCHOR ); ?>">
+					<a class="wbs-button button-no-hover ts-bnpl-landing__btn" href="<?php echo esc_url( $filtered ? $filtered : '#' . self::PRODUCTS_ANCHOR ); ?>">
 						<?php esc_html_e( 'مشاهده محصولاتی که قابلیت خرید اعتباری دارند', 'ts-bnpl' ); ?>
 					</a>
 					<?php if ( $shop ) : ?>
-						<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--ghost" href="<?php echo esc_url( $shop ); ?>">
+						<a class="wbs-button button-simple button-no-hover ts-bnpl-landing__btn ts-bnpl-landing__btn--simple" href="<?php echo esc_url( $shop ); ?>">
 							<?php esc_html_e( 'همه‌ی محصولات فروشگاه', 'ts-bnpl' ); ?>
 						</a>
 					<?php endif; ?>
