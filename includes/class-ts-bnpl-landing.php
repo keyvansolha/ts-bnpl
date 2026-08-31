@@ -108,14 +108,48 @@ class TS_BNPL_Landing {
 			TS_BNPL_VERSION
 		);
 
-		/*
-		 * قالب سوایپر را فقط در بخش‌هایی که لازم دارد صف می‌کند و صفحه‌ی
-		 * برگه‌ی معمولی جزوشان نیست. با همان هندل قالب صف می‌کنیم تا اگر
-		 * جای دیگری هم لود شده باشد، دوباره بارگذاری نشود.
-		 */
-		$is_mobile = defined( 'IS_MOBILE' ) ? IS_MOBILE : wp_is_mobile();
+		self::enqueue_theme_card_assets();
+	}
 
-		if ( $is_mobile || ! defined( 'THEME_ASSETS' ) ) {
+	/**
+	 * استایل‌های کارت محصول و کاروسل از خود قالب.
+	 *
+	 * قالب این فایل‌ها را فقط در آرشیو و صفحه‌هایی که ساختار page-builder
+	 * دارند صف می‌کند، و برگه‌ی ساده جزوشان نیست. بدون آن‌ها کارت محصول
+	 * بی‌استایل رندر می‌شود و رنگ‌هایش را از جای اشتباه به ارث می‌برد — همان
+	 * چیزی که در حالت تاریک متن را سبز نشان می‌داد.
+	 *
+	 * عمداً هیچ استایل کارتی اینجا بازنویسی نمی‌شود؛ فقط همان فایل‌های قالب با
+	 * همان هندل‌ها صف می‌شوند تا اگر جای دیگری هم لود شده باشند تکرار نشوند.
+	 *
+	 * @return void
+	 */
+	private static function enqueue_theme_card_assets() {
+		if ( ! defined( 'THEME_ASSETS' ) || ! defined( 'THEME_LIB' ) ) {
+			return;
+		}
+
+		$is_mobile = defined( 'IS_MOBILE' ) ? IS_MOBILE : wp_is_mobile();
+		$theme_dir = get_template_directory();
+
+		// کارت محصول: همان فایلی که آرشیو فروشگاه استفاده می‌کند.
+		$archive_rel = $is_mobile
+			? 'lib/Archive/assets/scss/archiveModularMobile.css'
+			: 'lib/Archive/assets/scss/archiveModular.css';
+
+		if ( ! wp_style_is( 'archive', 'enqueued' ) && file_exists( $theme_dir . '/' . $archive_rel ) ) {
+			wp_enqueue_style( 'archive', get_template_directory_uri() . '/' . $archive_rel, array(), TS_BNPL_VERSION );
+		}
+
+		// اندازه و فاصله‌ی اسلایدها؛ به .products-carousel-panel اسکوپ شده است.
+		$module_rel = 'assets/scss/modules/product-carousel.css';
+
+		if ( ! wp_style_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $module_rel ) ) {
+			wp_enqueue_style( 'product-carousel', THEME_ASSETS . 'scss/modules/product-carousel.css', array(), TS_BNPL_VERSION );
+		}
+
+		// روی موبایل کاروسل یک اسکرول افقی ساده است و سوایپر لازم ندارد.
+		if ( $is_mobile ) {
 			return;
 		}
 
@@ -204,6 +238,22 @@ class TS_BNPL_Landing {
 	private static function section_hero() {
 		?>
 		<section class="ts-bnpl-landing__hero">
+			<?php
+			/*
+			 * لوگوی گرد خود سایت، به‌عنوان گرافیک پس‌زمینه. عمداً aria-hidden و
+			 * pointer-events:none است و در جریان چیدمان قرار نمی‌گیرد، پس متن
+			 * هیرو را جابه‌جا نمی‌کند. بخشی از آن بیرون کادر می‌افتد و هیرو
+			 * با overflow آن را می‌بُرد.
+			 */
+			$logo = self::hero_logo_url();
+
+			if ( $logo ) :
+				?>
+				<span class="ts-bnpl-landing__glyph" aria-hidden="true">
+					<img src="<?php echo esc_url( $logo ); ?>" alt="" width="440" height="440" loading="lazy" decoding="async" />
+				</span>
+			<?php endif; ?>
+
 			<p class="ts-bnpl-landing__eyebrow"><?php esc_html_e( 'خرید اعتباری', 'ts-bnpl' ); ?></p>
 
 			<h2 class="ts-bnpl-landing__headline">
@@ -418,7 +468,14 @@ class TS_BNPL_Landing {
 			$slider_id = 'ts-bnpl-products-carousel';
 			?>
 
-			<div class="ts-bnpl-landing__carousel<?php echo $is_mobile ? ' is-mobile' : ''; ?>">
+			<?php
+			/*
+			 * کلاس‌های wbs-panel و products-carousel-panel عمدی‌اند: CSS ماژول
+			 * کاروسل قالب به همین ظرف اسکوپ شده و عرض اسلاید و اسکرول موبایل
+			 * از آنجا می‌آید. بدون این ظرف، اندازه‌ی کارت‌ها می‌شکند.
+			 */
+			?>
+			<div class="wbs-panel products-carousel-panel ts-bnpl-landing__carousel">
 				<?php if ( ! $is_mobile ) : ?>
 					<div class="products-carousel swiper" id="<?php echo esc_attr( $slider_id ); ?>">
 						<div class="swiper-wrapper">
@@ -599,6 +656,24 @@ class TS_BNPL_Landing {
 			</div>
 		</section>
 		<?php
+	}
+
+	/**
+	 * نشانی لوگوی گرد سایت برای گرافیک هیرو.
+	 *
+	 * از دارایی خود قالب استفاده می‌شود؛ نسخه‌ی تازه‌ای ساخته نمی‌شود. اگر قالب
+	 * عوض شود و فایل نباشد، هیرو بی‌سروصدا بدون گرافیک رندر می‌شود.
+	 *
+	 * @return string
+	 */
+	private static function hero_logo_url() {
+		$relative = 'images/logo.svg';
+
+		if ( file_exists( get_template_directory() . '/' . $relative ) ) {
+			return get_template_directory_uri() . '/' . $relative;
+		}
+
+		return '';
 	}
 
 	/**

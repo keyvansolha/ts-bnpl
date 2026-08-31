@@ -29,6 +29,8 @@
 	font-size: 0.9375rem;
 	line-height: 2.1;
 	text-align: right;
+	/* هیچ بخشی نباید صفحه را افقی اسکرول کند. */
+	overflow-x: clip;
 }
 
 .ts-bnpl-landing h2,
@@ -47,13 +49,67 @@
 /* ============================ هیرو ============================ */
 
 .ts-bnpl-landing__hero {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
-	padding: 30px 28px;
+	/*
+	 * صفحه راست‌به‌چپ است، پس «چپ» یعنی inline-end. همان‌جا فضا باز نگه داشته
+	 * می‌شود تا متن روی گرافیک نیفتد.
+	 */
+	padding: 34px 28px;
+	padding-inline-end: 210px;
+	overflow: hidden;
 	border: 1px solid var(--ts-l-border);
 	border-radius: 18px;
 	background: var(--ts-l-info-surface);
+	isolation: isolate;
+}
+
+/*
+ * گرافیک هیرو.
+ *
+ * عمداً position:absolute است تا در جریان چیدمان نباشد و متن را تکان ندهد.
+ * بخشی از دایره بیرون کادر می‌افتد و overflow:hidden هیرو آن را می‌بُرد —
+ * همان حسِ قاب در فتوشاپ.
+ */
+
+.ts-bnpl-landing__glyph {
+	position: absolute;
+	z-index: -1;
+	top: 50%;
+	inset-inline-start: auto;
+	inset-inline-end: -70px;
+	width: 300px;
+	height: 300px;
+	margin-top: -150px;
+	opacity: 0.14;
+	pointer-events: none;
+}
+
+.ts-bnpl-landing__glyph img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	animation: ts-bnpl-spin 60s linear infinite;
+}
+
+@keyframes ts-bnpl-spin {
+
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.ts-bnpl-landing__glyph img {
+		animation: none;
+	}
 }
 
 .ts-bnpl-landing__eyebrow {
@@ -81,24 +137,30 @@
 	margin-top: 6px;
 }
 
-.ts-bnpl-landing__btn {
+/*
+ * هر حالت دکمه صریح نوشته می‌شود.
+ *
+ * قبلاً هاور فقط brightness() می‌زد؛ آن فیلتر روی متن و پس‌زمینه با هم اعمال
+ * می‌شد و در حالت تاریک کنتراست را می‌خورد. حالا پس‌زمینه با color-mix تیره
+ * می‌شود و رنگ متن در همه‌ی حالت‌ها ثابت و صریح می‌ماند.
+ */
+
+.ts-bnpl-landing__btn,
+.ts-bnpl-landing__btn:link,
+.ts-bnpl-landing__btn:visited {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 44px;
+	min-height: 46px;
 	padding: 0 22px;
 	border: 1px solid transparent;
 	border-radius: 10px;
 	font-size: 0.875rem;
 	font-weight: 500;
 	line-height: 1;
+	text-align: center;
 	text-decoration: none;
-	transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease;
-}
-
-.ts-bnpl-landing__btn:hover {
-	filter: brightness(0.95);
-	text-decoration: none;
+	transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .ts-bnpl-landing__btn:focus-visible {
@@ -106,15 +168,68 @@
 	outline-offset: 2px;
 }
 
-.ts-bnpl-landing__btn--primary {
+/* دکمه‌ی اصلی: متن همیشه جوهر تیره روی سبز برند می‌ماند. */
+
+.ts-bnpl-landing__btn--primary,
+.ts-bnpl-landing__btn--primary:link,
+.ts-bnpl-landing__btn--primary:visited {
+	border-color: var(--ts-l-accent);
 	background: var(--ts-l-accent);
 	color: var(--ts-l-on-accent);
 }
 
-.ts-bnpl-landing__btn--ghost {
+.ts-bnpl-landing__btn--primary:hover,
+.ts-bnpl-landing__btn--primary:focus {
+	border-color: color-mix(in srgb, var(--ts-l-accent) 84%, #000);
+	background: color-mix(in srgb, var(--ts-l-accent) 84%, #000);
+	color: var(--ts-l-on-accent);
+}
+
+.ts-bnpl-landing__btn--primary:active {
+	border-color: color-mix(in srgb, var(--ts-l-accent) 72%, #000);
+	background: color-mix(in srgb, var(--ts-l-accent) 72%, #000);
+	color: var(--ts-l-on-accent);
+}
+
+/* دکمه‌ی ثانویه: در هاور پر می‌شود، پس متن باید به رنگ روی-اکسنت برگردد. */
+
+.ts-bnpl-landing__btn--ghost,
+.ts-bnpl-landing__btn--ghost:link,
+.ts-bnpl-landing__btn--ghost:visited {
 	border-color: var(--ts-l-border);
 	background: var(--ts-l-surface);
 	color: var(--ts-l-strong);
+}
+
+.ts-bnpl-landing__btn--ghost:hover,
+.ts-bnpl-landing__btn--ghost:focus {
+	border-color: var(--ts-l-accent);
+	background: var(--ts-l-accent);
+	color: var(--ts-l-on-accent);
+}
+
+.ts-bnpl-landing__btn--ghost:active {
+	border-color: color-mix(in srgb, var(--ts-l-accent) 84%, #000);
+	background: color-mix(in srgb, var(--ts-l-accent) 84%, #000);
+	color: var(--ts-l-on-accent);
+}
+
+/*
+ * پشتیبان برای مرورگرهایی که color-mix ندارند: به‌جای رنگ نامعتبر، همان اکسنت
+ * با کمی شفافیت کمتر. متن دست‌نخورده می‌ماند، پس کنتراست هرگز نمی‌شکند.
+ */
+
+@supports not (background: color-mix(in srgb, red 50%, #000)) {
+
+	.ts-bnpl-landing__btn--primary:hover,
+	.ts-bnpl-landing__btn--primary:focus,
+	.ts-bnpl-landing__btn--ghost:hover,
+	.ts-bnpl-landing__btn--ghost:focus {
+		border-color: var(--ts-l-accent);
+		background: var(--ts-l-accent);
+		color: var(--ts-l-on-accent);
+		opacity: 0.88;
+	}
 }
 
 /* ============================ بخش‌ها ============================ */
@@ -250,32 +365,24 @@
 
 /* ============================ کاروسل ============================ */
 
-.ts-bnpl-landing__carousel {
-	position: relative;
-}
-
 /*
- * ابعاد و فاصله‌ی کارت‌ها از خود قالب می‌آید؛ اینجا فقط ظرف را می‌سازیم تا
- * کارت‌ها دقیقاً مثل بقیه‌ی سایت دربیایند.
+ * ابعاد کارت، عرض اسلاید و اسکرول موبایل همه از CSS ماژول کاروسل قالب می‌آیند
+ * که به .products-carousel-panel اسکوپ شده. اینجا عمداً هیچ‌کدام بازنویسی
+ * نمی‌شوند تا کاروسل مو‌به‌مو مثل صفحه‌ی اصلی و آرشیو دربیاید.
  */
 
-.ts-bnpl-landing__carousel .products-carousel {
-	overflow: hidden;
+.ts-bnpl-landing__carousel {
+	position: relative;
+	margin: 0;
 }
 
-.ts-bnpl-landing__carousel.is-mobile .products-carousel {
-	display: flex;
-	gap: 12px;
-	overflow-x: auto;
-	scroll-snap-type: x mandatory;
-	-webkit-overflow-scrolling: touch;
-}
+/* دکمه‌های ناوبری روی موبایل جایی ندارند؛ آنجا اسکرول لمسی است. */
 
-.ts-bnpl-landing__carousel.is-mobile .products-carousel > .item {
-	flex: 0 0 auto;
-	width: 45%;
-	min-width: 150px;
-	scroll-snap-align: start;
+@media (max-width: 991.98px) {
+
+	.ts-bnpl-landing__carousel .wbs-products-nav {
+		display: none;
+	}
 }
 
 .ts-bnpl-landing__empty {
@@ -381,6 +488,18 @@
 		border-radius: 14px;
 	}
 
+	/* روی موبایل فضای افقی نیست؛ گرافیک به گوشه می‌رود و محوتر می‌شود. */
+
+	.ts-bnpl-landing__glyph {
+		top: auto;
+		bottom: -60px;
+		inset-inline-end: -60px;
+		width: 180px;
+		height: 180px;
+		margin-top: 0;
+		opacity: 0.1;
+	}
+
 	.ts-bnpl-landing__headline {
 		font-size: 1.1875rem;
 	}
@@ -396,5 +515,63 @@
 	.ts-bnpl-landing__callout,
 	.ts-bnpl-landing__final {
 		padding: 20px 18px;
+	}
+
+	.ts-bnpl-landing__steps {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+	}
+
+	.ts-bnpl-landing__step {
+		padding: 16px 15px;
+	}
+
+	.ts-bnpl-landing__title {
+		font-size: 1.125rem;
+	}
+}
+
+/*
+ * زیر ۳۶۰ پیکسل، متن‌های چپ‌چین‌شده و justify باعث شکستن بد کلمات می‌شوند و
+ * پدینگ‌ها عرض مفید را می‌خورند. اینجا همه‌چیز جمع‌تر و ساده‌تر می‌شود.
+ */
+
+@media (max-width: 360px) {
+
+	.ts-bnpl-landing {
+		gap: 26px;
+		font-size: 0.875rem;
+	}
+
+	.ts-bnpl-landing p {
+		text-align: start;
+	}
+
+	.ts-bnpl-landing__hero {
+		padding: 18px 15px;
+	}
+
+	.ts-bnpl-landing__headline {
+		font-size: 1.0625rem;
+	}
+
+	.ts-bnpl-landing__btn {
+		padding: 0 14px;
+		font-size: 0.8125rem;
+	}
+
+	.ts-bnpl-landing__callout,
+	.ts-bnpl-landing__final,
+	.ts-bnpl-landing__sample {
+		padding: 16px 14px;
+	}
+
+	.ts-bnpl-landing__faq-q {
+		padding: 13px 14px;
+		font-size: 0.8125rem;
+	}
+
+	.ts-bnpl-landing__faq-a {
+		padding: 0 14px 14px;
 	}
 }
