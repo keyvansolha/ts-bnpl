@@ -39,10 +39,17 @@
 	text-decoration: none;
 }
 
+/*
+ * اندازه‌ی هر عنوان کنار خود همان بخش، به‌صورت --ts-l-h-size تعریف می‌شود و
+ * فقط همین‌جا اعمال می‌گردد. دلیلش پایین‌تر در بخش «خنثی‌سازی» آمده: آنجا باید
+ * همین چهار ویژگی با !important تکرار شوند و نباید اندازه‌ها دو جا نوشته شوند.
+ */
+
 .ts-bnpl-landing h2,
 .ts-bnpl-landing h3 {
 	margin: 0;
 	color: var(--ts-l-strong);
+	font-size: var(--ts-l-h-size, 1rem);
 	line-height: 1.7;
 }
 
@@ -134,8 +141,8 @@
 }
 
 .ts-bnpl-landing__headline {
+	--ts-l-h-size: 1.5rem;
 	max-width: 44ch;
-	font-size: 1.5rem;
 }
 
 .ts-bnpl-landing__lede {
@@ -153,13 +160,25 @@
 /*
  * دکمه‌ها همان .wbs-button خود سایت‌اند.
  *
- * شکل قرصی، رنگ لایم روی جوهر سرمه‌ای، عرض کمینه و وزن فونت همه از
- * archiveModular.css می‌آیند که بالاتر صف شده. کلاس button-no-hover هم
- * سازوکار خود قالب برای خاموش کردن هاور است. اینجا فقط چیدمان تنظیم می‌شود؛
- * هیچ رنگ، هاور یا زیرخطی تعریف نمی‌شود.
+ * شکل قرصی، عرض کمینه و پدینگ از archiveModular.css می‌آیند که بالاتر صف
+ * شده، و کلاس button-no-hover سازوکار خود قالب برای خاموش کردن هاور است.
+ *
+ * رنگ و وزن فونت اما نمی‌توانستند دست‌نخورده بمانند: لایه‌ی متن ویرایشگرِ
+ * قالب (پایین‌تر توضیح داده شده) با مشخصه‌ی بالاتر رویشان می‌نشست. پس
+ * به‌صورت توکن اینجا اعلام می‌شوند و بخش «خنثی‌سازی» آن‌ها را در هر چهار حالت
+ * اعمال می‌کند. مقدارها همان مقدارهای خود قالب‌اند، نه رنگ تازه.
  */
 
 .ts-bnpl-landing__btn {
+	/*
+	 * --brand-navy و --brand-lime در theme-system.css دقیقاً همان دو مقدار
+	 * ثابت SCSS دکمه‌ی قالب‌اند و در .dark بازتعریف نمی‌شوند، پس رنگ دکمه در
+	 * هر دو تم یکی می‌ماند بدون اینکه رنگ تازه‌ای اینجا ساخته شود. وزن فونت هم
+	 * همان مقدار _wbs-button.scss است.
+	 */
+	--ts-l-link: var(--brand-navy, #002864);
+	--ts-l-link-weight: "wght" 450;
+
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -168,6 +187,9 @@
 }
 
 .ts-bnpl-landing__btn--simple {
+	/* دکمه‌ی ساده‌ی قالب رنگ متن را از --black-white می‌گیرد؛ خودش تم‌آگاه است. */
+	--ts-l-link: var(--black-white, var(--ts-l-strong));
+
 	min-width: 0;
 }
 
@@ -181,7 +203,7 @@
 }
 
 .ts-bnpl-landing__title {
-	font-size: 1.25rem;
+	--ts-l-h-size: 1.25rem;
 }
 
 .ts-bnpl-landing__intro {
@@ -234,7 +256,7 @@
 }
 
 .ts-bnpl-landing__step-title {
-	font-size: 0.9375rem;
+	--ts-l-h-size: 0.9375rem;
 }
 
 .ts-bnpl-landing__step-text {
@@ -299,7 +321,7 @@
 }
 
 .ts-bnpl-landing__callout-title {
-	font-size: 1.0625rem;
+	--ts-l-h-size: 1.0625rem;
 }
 
 /* ============================ کاروسل ============================ */
@@ -316,7 +338,8 @@
 }
 
 .ts-bnpl-landing__seeall a {
-	color: var(--ts-l-info);
+	--ts-l-link: var(--ts-l-info);
+	color: var(--ts-l-link);
 	text-decoration: none;
 }
 
@@ -446,7 +469,7 @@
 }
 
 .ts-bnpl-landing__final-title {
-	font-size: 1.1875rem;
+	--ts-l-h-size: 1.1875rem;
 }
 
 /* ============================ موبایل ============================ */
@@ -477,7 +500,7 @@
 	}
 
 	.ts-bnpl-landing__headline {
-		font-size: 1.1875rem;
+		--ts-l-h-size: 1.1875rem;
 	}
 
 	.ts-bnpl-landing__split {
@@ -503,7 +526,7 @@
 	}
 
 	.ts-bnpl-landing__title {
-		font-size: 1.125rem;
+		--ts-l-h-size: 1.125rem;
 	}
 }
 
@@ -528,7 +551,7 @@
 	}
 
 	.ts-bnpl-landing__headline {
-		font-size: 1.0625rem;
+		--ts-l-h-size: 1.0625rem;
 	}
 
 	.ts-bnpl-landing__btn {
@@ -549,4 +572,156 @@
 	.ts-bnpl-landing__faq-a {
 		padding: 0 14px 14px;
 	}
+}
+
+/*
+|------------------------------------------------------------------------------
+| خنثی‌سازی لایه‌ی «متن ویرایشگر» قالب
+|------------------------------------------------------------------------------
+|
+| ریشه‌ی هر دو باگ گزارش‌شده همین‌جاست.
+|
+| قالب در assets/scss/components/_content-global.scss هرچه داخل .page-content
+| باشد را متنِ نوشته‌شده در ویرایشگر فرض می‌کند و در page.css به این شکل درمی‌آید:
+|
+|   body.page-template-default .page-content a   { color: var(--secondary);
+|                                                  text-decoration: underline; }
+|   body.page-template-default .page-content a:hover { color: #B6E30C; }
+|   body.page-template-default .page-content img { width: 100%; height: auto;
+|                                                  border-radius: 25px;
+|                                                  margin: 30px 0 30px auto !important; }
+|   body.page-template-default .page-content h2..h6 { font-size: 18px !important;
+|                                                  color: var(--secondary); ... }
+|   body.page-template-default .page-content p   { text-align: justify !important; }
+|
+| لندینگ از the_content تزریق می‌شود، یعنی دقیقاً وسط همین قانون‌ها می‌افتد و
+| نتیجه‌اش این بود:
+|
+|   • دکمه‌ها زیرخط می‌گرفتند، رنگشان --secondary می‌شد و در هاور لایم — که در
+|     حالت تاریک یعنی متن لایم روی دکمه‌ی لایم.
+|   • عنوان همه‌ی بخش‌ها ۱۸ پیکسل و --secondary می‌شد؛ در حالت تاریک لایم.
+|   • عکس کارت‌های کاروسل تا عرض کامل کارت کش می‌آمدند (حس «زوم») و ۳۰ پیکسل
+|     مارجین عمودی می‌گرفتند، و عنوان کارت‌ها ۱۸ پیکسل با مارجین ۳۰ پیکسلی
+|     می‌شد. چون این ارتفاع‌ها به محتوای هر کارت بستگی داشت، کارت‌ها بالا و
+|     پایین می‌افتادند.
+|   • عنوان کارت داخل یک <a> بلوکی است، پس زیرخطِ همان قانون به شکل یک خط زیر
+|     کارت دیده می‌شد.
+|
+| اینکه فقط نسخه‌ی دسکتاپ خراب بود هم از همین‌جاست: pageMobile.scss این لایه را
+| اصلاً وارد نمی‌کند.
+|
+| انتخابگرها عمداً سه‌کلاسه‌اند (ts-bnpl-landing-page + page-content +
+| ts-bnpl-landing) تا مشخصه‌شان از (0,2,2) آن قانون‌ها بالاتر باشد و به ترتیب
+| چاپ فایل‌ها وابسته نمانند. !important فقط جایی هست که قانون قالب هم دارد.
+*/
+
+/* ---------------------------- لینک‌ها ---------------------------- */
+
+/*
+ * هیچ لینکی در لندینگ زیرخط ندارد و هیچ‌کدام در هاور رنگ عوض نمی‌کنند — رنگ
+ * در چهار حالت یکی است. --ts-l-link را هر جزء کنار خودش تعریف می‌کند؛ اگر
+ * تعریف نکند رنگ از والدش می‌آید، پس قانون‌های خودِ کارت محصول (که مشخصه‌ی
+ * بالاتری دارند) دست‌نخورده می‌مانند.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing a,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing a:hover,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing a:focus,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing a:active {
+	color: var(--ts-l-link, inherit);
+	font-variation-settings: var(--ts-l-link-weight, inherit);
+	text-decoration: none;
+	text-underline-offset: auto;
+}
+
+/*
+ * دکمه‌ها علاوه بر رنگ متن، پس‌زمینه‌شان هم در هر چهار حالت قفل می‌شود. قالب
+ * خودش برای .wbs-button هاورِ پس‌زمینه ندارد، ولی درخواست صریح این بود که
+ * دکمه ساده بماند و زیر موس هیچ تکانی نخورد.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn:hover,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn:focus,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn:active {
+	border: none;
+	background: var(--brand-lime, #b6e30c);
+	transition: none;
+}
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn--simple,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn--simple:hover,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn--simple:focus,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__btn--simple:active {
+	background: none;
+}
+
+/* ---------------------------- عنوان‌ها ---------------------------- */
+
+/*
+ * اندازه از --ts-l-h-size می‌آید که کنار خود هر بخش تعریف شده، پس هیچ عددی
+ * اینجا تکرار نمی‌شود. text-align عمداً inherit است تا عنوان فراخوان پایانی
+ * وسط بماند و بقیه راست‌چین.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing :is(h2, h3, h4, h5, h6) {
+	margin: 0 !important;
+	color: var(--ts-l-strong);
+	font-size: var(--ts-l-h-size, 1rem) !important;
+	font-variation-settings: inherit !important;
+	line-height: var(--ts-l-h-leading, 1.7) !important;
+	text-align: inherit !important;
+}
+
+/*
+ * عنوان کارت محصول مال قالب است، نه لندینگ. مقدارها از همان
+ * lib/Archive/assets/scss/archiveModular.css می‌آیند و اینجا فقط دوباره
+ * برقرار می‌شوند، چون قانون بالا با !important جلویشان را گرفته است.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing__carousel .primary-title {
+	--ts-l-h-size: 14px;
+	--ts-l-h-leading: normal;
+	margin-bottom: 7px !important;
+}
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing__carousel .sub-title {
+	--ts-l-h-size: 14px;
+	--ts-l-h-leading: normal;
+}
+
+/* ---------------------------- پاراگراف‌ها ---------------------------- */
+
+/*
+ * justifyِ اجباریِ قالب برای متن‌های بلند همان چیزی است که لندینگ هم می‌خواهد؛
+ * فقط دو جای وسط‌چین باید وسط بمانند.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__empty,
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__final p {
+	text-align: center !important;
+	text-align-last: center;
+}
+
+/* ---------------------------- تصویرها ---------------------------- */
+
+/*
+ * تصویر کارت محصول باید دقیقاً به همان اندازه‌ای دربیاید که در آرشیو درمی‌آید،
+ * یعنی اندازه‌ی ذاتی خودش بدون هیچ قانونی. max-width فقط محافظ سرریز است.
+ */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing img {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	margin: 0 !important;
+	float: none;
+	border-radius: 0;
+}
+
+/* گرافیک هیرو تنها تصویری است که عمداً کادرش را پر می‌کند. */
+
+body.ts-bnpl-landing-page .page-content .ts-bnpl-landing .ts-bnpl-landing__glyph img {
+	width: 100%;
+	height: 100%;
 }

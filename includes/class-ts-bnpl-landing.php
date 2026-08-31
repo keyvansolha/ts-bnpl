@@ -43,8 +43,33 @@ class TS_BNPL_Landing {
 	 */
 	public static function init() {
 		add_filter( 'the_content', array( __CLASS__, 'render' ), 20 );
+		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ), 20 );
 		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', array( __CLASS__, 'filter_shop_query' ), 20, 2 );
+	}
+
+	/**
+	 * کلاس نشانه‌ی صفحه‌ی فرود روی تگ body.
+	 *
+	 * قالب هرچه داخل `.page-content` باشد را «متن ویرایشگر» فرض می‌کند و با
+	 * قانون‌های !important به p، h2..h6، a و img دست می‌زند (فایل
+	 * assets/scss/components/_content-global.scss که در page.css می‌نشیند).
+	 * لندینگ از the_content تزریق می‌شود، پس دقیقاً وسط همان قانون‌ها می‌افتد.
+	 *
+	 * این کلاس به شیت لندینگ اجازه می‌دهد آن لایه را با انتخابگر سه‌کلاسه
+	 * خنثی کند؛ یعنی مشخصه‌اش قطعاً از (0,2,2) آن قانون‌ها بالاتر است و به
+	 * ترتیب چاپ فایل‌ها وابسته نمی‌ماند.
+	 *
+	 * @param string[] $classes کلاس‌های فعلی body.
+	 *
+	 * @return string[]
+	 */
+	public static function body_class( $classes ) {
+		if ( self::is_landing() ) {
+			$classes[] = 'ts-bnpl-landing-page';
+		}
+
+		return $classes;
 	}
 
 	/*
@@ -107,14 +132,22 @@ class TS_BNPL_Landing {
 			return;
 		}
 
+		/*
+		 * اول دارایی‌های قالب، بعد شیت لندینگ.
+		 *
+		 * شیت لندینگ لایه‌ی «متن برگه» قالب را خنثی می‌کند، پس باید بعد از
+		 * همه‌ی شیت‌هایی چاپ شود که این صفحه از قالب می‌گیرد. مشخصه‌ی
+		 * انتخابگرها خودش این کار را می‌کند، ولی وابستگی صریح باعث می‌شود
+		 * ترتیب چاپ هم دیگر تصادفی نباشد.
+		 */
+		$deps = self::enqueue_theme_card_assets();
+
 		wp_enqueue_style(
 			'ts-bnpl-landing',
 			TS_BNPL_URL . 'assets/css/ts-bnpl-landing.css',
-			array(),
+			$deps,
 			TS_BNPL_VERSION
 		);
-
-		self::enqueue_theme_card_assets();
 	}
 
 	/**
@@ -128,69 +161,121 @@ class TS_BNPL_Landing {
 	 * عمداً هیچ استایل کارتی اینجا بازنویسی نمی‌شود؛ فقط همان فایل‌های قالب با
 	 * همان هندل‌ها صف می‌شوند تا اگر جای دیگری هم لود شده باشند تکرار نشوند.
 	 *
-	 * @return void
+	 * @return string[] هندل شیت‌هایی که این صفحه از قالب می‌گیرد، تا شیت
+	 *                  لندینگ بتواند به آن‌ها وابسته شود و بعدشان چاپ شود.
 	 */
 	private static function enqueue_theme_card_assets() {
 		if ( ! defined( 'THEME_ASSETS' ) || ! defined( 'THEME_LIB' ) ) {
-			return;
+			return array();
 		}
 
 		$is_mobile = defined( 'IS_MOBILE' ) ? IS_MOBILE : wp_is_mobile();
 		$theme_dir = get_template_directory();
+
+		/*
+		 * شیت‌های خود مسیر برگه هم در فهرست وابستگی می‌آیند.
+		 *
+		 * «Page» همان فایلی است که لایه‌ی متن ویرایشگر را روی .page-content
+		 * می‌گذارد و شیت لندینگ آن را خنثی می‌کند؛ پس باید قبل از لندینگ چاپ
+		 * شود، نه بعدش.
+		 */
+		$deps = array();
+
+		foreach ( array( 'style', 'Page' ) as $handle ) {
+			if ( wp_style_is( $handle, 'enqueued' ) ) {
+				$deps[] = $handle;
+			}
+		}
 
 		// کارت محصول: همان فایلی که آرشیو فروشگاه استفاده می‌کند.
 		$archive_rel = $is_mobile
 			? 'lib/Archive/assets/scss/archiveModularMobile.css'
 			: 'lib/Archive/assets/scss/archiveModular.css';
 
-		if ( ! wp_style_is( 'archive', 'enqueued' ) && file_exists( $theme_dir . '/' . $archive_rel ) ) {
-			wp_enqueue_style( 'archive', get_template_directory_uri() . '/' . $archive_rel, array(), TS_BNPL_VERSION );
+		if ( file_exists( $theme_dir . '/' . $archive_rel ) ) {
+			if ( ! wp_style_is( 'archive', 'enqueued' ) ) {
+				wp_enqueue_style( 'archive', get_template_directory_uri() . '/' . $archive_rel, array(), TS_BNPL_VERSION );
+			}
+
+			$deps[] = 'archive';
 		}
 
-		// اندازه و فاصله‌ی اسلایدها؛ به .products-carousel-panel اسکوپ شده است.
+		/*
+		 * اندازه و فاصله‌ی اسلایدها؛ به .products-carousel-panel اسکوپ شده است.
+		 *
+		 * هندل عمداً «products-carousel» است، همان اسمی که مسیر محصول و مسیر
+		 * ۴۰۴ قالب برای همین فایل به کار می‌برند. هندلِ مفردِ قبلی با آن‌ها یکی
+		 * نبود و اگر هر دو در یک صفحه فعال می‌شدند، فایل دو بار می‌آمد.
+		 */
 		$module_rel = 'assets/scss/modules/product-carousel.css';
 
-		if ( ! wp_style_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $module_rel ) ) {
-			wp_enqueue_style( 'product-carousel', THEME_ASSETS . 'scss/modules/product-carousel.css', array(), TS_BNPL_VERSION );
+		if ( file_exists( $theme_dir . '/' . $module_rel ) ) {
+			if ( ! wp_style_is( 'products-carousel', 'enqueued' ) && ! wp_style_is( 'product-carousel', 'enqueued' ) ) {
+				wp_enqueue_style( 'products-carousel', THEME_ASSETS . 'scss/modules/product-carousel.css', array(), TS_BNPL_VERSION );
+			}
+
+			$deps[] = 'products-carousel';
 		}
 
 		// روی موبایل کاروسل یک اسکرول افقی ساده است و سوایپر لازم ندارد.
 		if ( $is_mobile ) {
-			return;
+			return array_values( array_unique( array_filter( $deps, 'wp_style_is' ) ) );
 		}
 
 		/*
-		 * نسخه‌ی bundle عمدی است، نه هسته‌ی خالی سوایپر.
+		 * سوایپر باید حتماً بیلد bundle باشد، نه هسته‌ی خالی.
 		 *
-		 * اسکریپت کاروسل قالب به ماژول‌های Navigation و Lazy نیاز دارد و آن‌ها
-		 * فقط در bundle هستند. هر صفحه‌ای در قالب که همان اسکریپت را لود
-		 * می‌کند هم همین بیلد را می‌دهد. نسخه‌ی Archive انتخاب شده تا با همان
-		 * شیت کارتی که بالاتر صف شد جفت بماند.
+		 * مسیر Page قالب روی هر برگه‌ی ساده، هندل «swiper» را به
+		 * assets/plugins/swiper/swiper.min.js وصل می‌کند. آن بیلد فقط Resize و
+		 * Observer را نصب می‌کند و ماژول Navigation ندارد، پس دکمه‌های
+		 * قبلی/بعدی کاروسل هیچ کاری نمی‌کنند. چون آن هندل از قبل در صف بود،
+		 * شرطِ «اگر صف نشده صف کن» هرگز اجرا نمی‌شد و افزونه در عمل با همان
+		 * هسته‌ی خالی کار می‌کرد.
+		 *
+		 * پس به‌جای شرط، خود هندل روی بیلد درست نشانده می‌شود — همان فایلی که
+		 * صفحه‌ی محصول با همین اسکریپت کاروسل می‌دهد. جای‌گزینی فقط روی همین
+		 * یک برگه اتفاق می‌افتد و هر وابسته‌ای به هندل «swiper» هم درست
+		 * می‌ماند، چون اسم هندل عوض نمی‌شود.
 		 */
 		$swiper_css = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.css';
 		$swiper_js  = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.js';
 
-		if ( ! wp_style_is( 'swiper', 'enqueued' ) && file_exists( $theme_dir . '/' . $swiper_css ) ) {
-			wp_enqueue_style( 'swiper', get_template_directory_uri() . '/' . $swiper_css, array(), TS_BNPL_VERSION );
+		if ( file_exists( $theme_dir . '/' . $swiper_css ) ) {
+			if ( ! wp_style_is( 'swiper', 'enqueued' ) ) {
+				wp_enqueue_style( 'swiper', get_template_directory_uri() . '/' . $swiper_css, array(), TS_BNPL_VERSION );
+			}
+
+			$deps[] = 'swiper';
 		}
 
-		if ( ! wp_script_is( 'swiper', 'enqueued' ) && file_exists( $theme_dir . '/' . $swiper_js ) ) {
-			wp_enqueue_script( 'swiper', get_template_directory_uri() . '/' . $swiper_js, array( 'jquery' ), TS_BNPL_VERSION, true );
+		if ( file_exists( $theme_dir . '/' . $swiper_js ) ) {
+			$bundle_url = get_template_directory_uri() . '/' . $swiper_js;
+			$registered = wp_scripts()->query( 'swiper', 'registered' );
+
+			if ( $registered && $bundle_url !== $registered->src ) {
+				wp_deregister_script( 'swiper' );
+			}
+
+			if ( ! wp_script_is( 'swiper', 'registered' ) ) {
+				wp_register_script( 'swiper', $bundle_url, array( 'jquery' ), TS_BNPL_VERSION, true );
+			}
+
+			wp_enqueue_script( 'swiper' );
 		}
 
 		/*
 		 * اسکریپت کاروسل خود قالب، نه یک کپی از تنظیماتش.
 		 *
-		 * آن فایل عمداً slidesPerView سراسری ندارد، چون عرض و فاصله‌ی اسلایدها
-		 * از همان CSS ماژول می‌آید. نسخه‌ی قبلی افزونه slidesPerView و
-		 * spaceBetween می‌داد و مارجین اینلاین سوایپر روی مارجین CSS سوار
-		 * می‌شد؛ نتیجه‌اش عرض غلط کارت‌ها روی دسکتاپ بود.
+		 * آن فایل عمداً slidesPerView سراسری ندارد و اندازه‌ی اسلاید را به
+		 * breakpointها می‌سپارد؛ دقیقاً همان چیزی که صفحه‌ی محصول هم می‌دهد.
 		 */
 		$carousel_rel = 'assets/js/modular/product-carousel.min.js';
 
 		if ( ! wp_script_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $carousel_rel ) ) {
 			wp_enqueue_script( 'product-carousel', THEME_ASSETS . 'js/modular/product-carousel.min.js', array( 'jquery', 'swiper' ), TS_BNPL_VERSION, true );
 		}
+
+		return array_values( array_unique( array_filter( $deps, 'wp_style_is' ) ) );
 	}
 
 	/*
