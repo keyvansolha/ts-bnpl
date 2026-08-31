@@ -392,6 +392,21 @@
  * نمی‌شوند تا کاروسل مو‌به‌مو مثل صفحه‌ی اصلی و آرشیو دربیاید.
  */
 
+.ts-bnpl-landing__seeall {
+	margin: -6px 0 0;
+	font-size: 0.8125rem;
+}
+
+.ts-bnpl-landing__seeall a {
+	color: var(--ts-l-info);
+	text-decoration: none;
+}
+
+.ts-bnpl-landing__seeall a:hover,
+.ts-bnpl-landing__seeall a:focus {
+	text-decoration: underline;
+}
+
 .ts-bnpl-landing__carousel {
 	position: relative;
 	margin: 0;

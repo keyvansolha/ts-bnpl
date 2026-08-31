@@ -32,6 +32,11 @@ class TS_BNPL_Landing {
 	const MAX_PRODUCTS = 20;
 
 	/**
+	 * پارامتر نشانی که آرشیو فروشگاه را به کالاهای اعتباری محدود می‌کند.
+	 */
+	const QUERY_FLAG = 'ts_bnpl';
+
+	/**
 	 * ثبت هوک‌ها.
 	 *
 	 * @return void
@@ -39,6 +44,7 @@ class TS_BNPL_Landing {
 	public static function init() {
 		add_filter( 'the_content', array( __CLASS__, 'render' ), 20 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ), 20 );
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', array( __CLASS__, 'filter_shop_query' ), 20, 2 );
 	}
 
 	/*
@@ -264,9 +270,12 @@ class TS_BNPL_Landing {
 				<?php esc_html_e( 'در تهران‌اسپیکر بخشی از کالاها را می‌توانید به‌جای پرداخت نقدی، از طریق روش‌های پرداخت اعتباری خریداری کنید. کالا مثل هر خرید دیگری برایتان ارسال می‌شود و پرداخت آن طبق شرایط روش اعتباری انتخابی شما انجام می‌گیرد.', 'ts-bnpl' ); ?>
 			</p>
 
+			<?php $shop = self::shop_url(); ?>
+
 			<div class="ts-bnpl-landing__actions">
-				<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="#<?php echo esc_attr( self::PRODUCTS_ANCHOR ); ?>">
-					<?php esc_html_e( 'دیدن کالاهای واجد شرایط', 'ts-bnpl' ); ?>
+				<?php /* فهرست کامل در آرشیو فروشگاه باز می‌شود، با مرتب‌سازی و فیلترهای همیشگی. */ ?>
+				<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="<?php echo esc_url( $shop ? $shop : '#' . self::PRODUCTS_ANCHOR ); ?>">
+					<?php esc_html_e( 'مشاهده محصولاتی که قابلیت خرید اعتباری دارند', 'ts-bnpl' ); ?>
 				</a>
 				<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--ghost" href="#ts-bnpl-how">
 					<?php esc_html_e( 'مراحل خرید', 'ts-bnpl' ); ?>
@@ -378,15 +387,19 @@ class TS_BNPL_Landing {
 	 *
 	 * @return array<int,int>
 	 */
-	public static function get_eligible_product_ids() {
+	public static function get_eligible_product_ids( $limit = null ) {
 		global $wpdb;
 
 		/*
-		 * سقف عمدی: کاروسل حداکثر MAX_PRODUCTS کارت نشان می‌دهد، پس کشیدن کل
-		 * جدول بی‌فایده است. بافر می‌گذاریم تا اگر فیلتر زیر چیزی را کنار
-		 * گذاشت، باز هم کاروسل پر بماند.
+		 * پیش‌فرض برای کاروسل سقف دارد، چون بیش از MAX_PRODUCTS کارت نشان
+		 * نمی‌دهد. آرشیو فروشگاه با limit صفر همه را می‌خواهد.
 		 */
-		$limit = self::MAX_PRODUCTS * 5;
+		if ( null === $limit ) {
+			$limit = self::MAX_PRODUCTS * 5;
+		}
+
+		$limit = max( 0, (int) $limit );
+		$bound = $limit > 0 ? $limit : PHP_INT_MAX;
 
 		$sql = "
 			SELECT
@@ -407,10 +420,129 @@ class TS_BNPL_Landing {
 			LIMIT %d
 		";
 
-		$rows = $wpdb->get_col( $wpdb->prepare( $sql, TS_BNPL_Data::META, $limit ) ); // phpcs:ignore WordPress.DB -- کوئری آماده؛ کش عمداً ندارد تا فهرست همیشه تازه بماند.
+		$rows = $wpdb->get_col( $wpdb->prepare( $sql, TS_BNPL_Data::META, $bound ) ); // phpcs:ignore WordPress.DB -- کوئری آماده؛ کش عمداً ندارد تا فهرست همیشه تازه بماند.
 		$ids  = array_values( array_unique( array_filter( array_map( 'absint', (array) $rows ) ) ) );
 
 		return (array) apply_filters( 'ts_bnpl_eligible_product_ids', $ids );
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| آرشیو فروشگاه، محدود به کالاهای اعتباری
+	|--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * نشانی آرشیو فروشگاه با فیلتر خرید اعتباری.
+	 *
+	 * @return string رشته‌ی خالی اگر برگه‌ی فروشگاه تعریف نشده باشد.
+	 */
+	public static function shop_url() {
+		if ( ! function_exists( 'wc_get_page_permalink' ) ) {
+			return '';
+		}
+
+		$shop = wc_get_page_permalink( 'shop' );
+
+		if ( ! $shop ) {
+			return '';
+		}
+
+		return add_query_arg( self::QUERY_FLAG, '1', $shop );
+	}
+
+	/**
+	 * آیا درخواست جاری آرشیو فروشگاهِ فیلترشده است؟
+	 *
+	 * @return bool
+	 */
+	public static function is_shop_filter_request() {
+		if ( is_admin() ) {
+			return false;
+		}
+
+		/*
+		 * مسیر ایجکس آرشیو.
+		 *
+		 * صفحه‌بندی و مرتب‌سازی آرشیو، فرم فیلتر را serialize می‌کنند و
+		 * پارامترهای نشانی همراهشان نمی‌رود. برای همین پرچم به شکل یک ورودی
+		 * پنهان داخل همان فرم است و اینجا از رشته‌ی سریالایزشده خوانده می‌شود.
+		 * عمداً فقط همین یک اکشن پذیرفته می‌شود.
+		 */
+		if ( wp_doing_ajax() ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- فقط یک فیلتر نمایشی؛ نانس را خود قالب بررسی می‌کند.
+			$action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
+
+			if ( 'loadMoreProducts' !== $action ) {
+				return false;
+			}
+
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- همان بالا.
+			$raw = isset( $_POST['fields']['filter'] ) ? wp_unslash( $_POST['fields']['filter'] ) : '';
+
+			if ( ! is_string( $raw ) || '' === $raw ) {
+				return false;
+			}
+
+			$parsed = array();
+			parse_str( $raw, $parsed );
+
+			return ! empty( $parsed[ self::QUERY_FLAG ] );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- فقط یک فیلتر نمایشی است، نه تغییر داده.
+		if ( empty( $_GET[ self::QUERY_FLAG ] ) ) {
+			return false;
+		}
+
+		// فقط آرشیو محصولات؛ هیچ صفحه‌ی دیگری نباید تحت تأثیر باشد.
+		return function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() );
+	}
+
+	/**
+	 * محدود کردن کوئری محصولات به کالاهای واجد شرایط.
+	 *
+	 * قالب، آرشیو را با WC_Product_Query خودش می‌سازد و هیچ هوکی هم ندارد، پس
+	 * به‌جای دست بردن در آن، همین فیلتر ووکامرس گرفته می‌شود. این‌طوری فهرست،
+	 * شمارش «X کالا»، بازه‌ی قیمت و صفحه‌بندی همگی با هم فیلتر می‌شوند و
+	 * مرتب‌سازی و فیلترهای موجود دست‌نخورده کار می‌کنند.
+	 *
+	 * از post__in استفاده می‌شود نه meta_query، چون در کالاهای متغیر متای
+	 * قیمت اقساطی روی خودِ متغیر است و کوئری روی والد پیدایش نمی‌کند.
+	 *
+	 * @param array $args      آرگومان‌های WP_Query.
+	 * @param array $query_vars آرگومان‌های اصلی WC_Product_Query.
+	 *
+	 * @return array
+	 */
+	public static function filter_shop_query( $args, $query_vars = array() ) {
+		unset( $query_vars );
+
+		if ( ! is_array( $args ) || ! self::is_shop_filter_request() ) {
+			return $args;
+		}
+
+		$ids = self::get_eligible_product_ids( 0 );
+
+		if ( empty( $ids ) ) {
+			// هیچ کالای واجد شرایطی نیست: آرشیو باید خالی دربیاید، نه کامل.
+			$args['post__in'] = array( 0 );
+
+			return $args;
+		}
+
+		// اگر کوئری از قبل محدود شده، فقط اشتراکشان باقی می‌ماند.
+		if ( ! empty( $args['post__in'] ) && is_array( $args['post__in'] ) ) {
+			$ids = array_values( array_intersect( $args['post__in'], $ids ) );
+
+			if ( empty( $ids ) ) {
+				$ids = array( 0 );
+			}
+		}
+
+		$args['post__in'] = $ids;
+
+		return $args;
 	}
 
 	/**
@@ -427,6 +559,16 @@ class TS_BNPL_Landing {
 		?>
 		<section class="ts-bnpl-landing__section ts-bnpl-landing__section--products" id="<?php echo esc_attr( self::PRODUCTS_ANCHOR ); ?>">
 			<h2 class="ts-bnpl-landing__title"><?php esc_html_e( 'محصولاتی که قابلیت خرید اعتباری دارند', 'ts-bnpl' ); ?></h2>
+
+			<?php
+			$shop_all = self::shop_url();
+
+			if ( $shop_all ) :
+				?>
+				<p class="ts-bnpl-landing__seeall">
+					<a href="<?php echo esc_url( $shop_all ); ?>"><?php esc_html_e( 'مشاهده‌ی همه در فروشگاه', 'ts-bnpl' ); ?></a>
+				</p>
+			<?php endif; ?>
 
 			<?php
 			if ( empty( $ids ) ) {
@@ -635,15 +777,16 @@ class TS_BNPL_Landing {
 	 * @return void
 	 */
 	private static function section_cta() {
-		$shop = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '';
+		$shop     = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '';
+		$filtered = self::shop_url();
 		?>
 		<section class="ts-bnpl-landing__section">
 			<div class="ts-bnpl-landing__final">
 				<h2 class="ts-bnpl-landing__final-title"><?php esc_html_e( 'آماده‌ی شروع هستید؟', 'ts-bnpl' ); ?></h2>
 				<p><?php esc_html_e( 'کالاهای واجد شرایط را ببینید و خریدتان را مثل همیشه شروع کنید.', 'ts-bnpl' ); ?></p>
 				<div class="ts-bnpl-landing__actions">
-					<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="#<?php echo esc_attr( self::PRODUCTS_ANCHOR ); ?>">
-						<?php esc_html_e( 'کالاهای واجد شرایط', 'ts-bnpl' ); ?>
+					<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--primary" href="<?php echo esc_url( $filtered ? $filtered : '#' . self::PRODUCTS_ANCHOR ); ?>">
+						<?php esc_html_e( 'مشاهده محصولاتی که قابلیت خرید اعتباری دارند', 'ts-bnpl' ); ?>
 					</a>
 					<?php if ( $shop ) : ?>
 						<a class="ts-bnpl-landing__btn ts-bnpl-landing__btn--ghost" href="<?php echo esc_url( $shop ); ?>">
