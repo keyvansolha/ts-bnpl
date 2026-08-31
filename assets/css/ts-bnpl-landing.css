@@ -145,16 +145,19 @@
 }
 
 /*
- * هر حالت دکمه صریح نوشته می‌شود.
+ * دکمه‌ها عمداً هیچ حالت هاوری ندارند.
  *
- * قبلاً هاور فقط brightness() می‌زد؛ آن فیلتر روی متن و پس‌زمینه با هم اعمال
- * می‌شد و در حالت تاریک کنتراست را می‌خورد. حالا پس‌زمینه با color-mix تیره
- * می‌شود و رنگ متن در همه‌ی حالت‌ها ثابت و صریح می‌ماند.
+ * هر تلاشی برای تغییر پس‌زمینه در هاور — چه تیره‌تر، چه روشن‌تر — روی سبز برند
+ * با متن جوهر تیره، خوانایی را کم می‌کرد. رنگ در همه‌ی حالت‌ها ثابت می‌ماند؛
+ * فقط نشانگر ماوس و حلقه‌ی فوکوس بازخورد می‌دهند.
  */
 
 .ts-bnpl-landing__btn,
 .ts-bnpl-landing__btn:link,
-.ts-bnpl-landing__btn:visited {
+.ts-bnpl-landing__btn:visited,
+.ts-bnpl-landing__btn:hover,
+.ts-bnpl-landing__btn:focus,
+.ts-bnpl-landing__btn:active {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -167,7 +170,8 @@
 	line-height: 1;
 	text-align: center;
 	text-decoration: none;
-	transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+	cursor: pointer;
+	transition: none;
 }
 
 .ts-bnpl-landing__btn:focus-visible {
@@ -175,82 +179,26 @@
 	outline-offset: 2px;
 }
 
-/* دکمه‌ی اصلی: متن همیشه جوهر تیره روی سبز برند می‌ماند. */
-
 .ts-bnpl-landing__btn--primary,
 .ts-bnpl-landing__btn--primary:link,
-.ts-bnpl-landing__btn--primary:visited {
+.ts-bnpl-landing__btn--primary:visited,
+.ts-bnpl-landing__btn--primary:hover,
+.ts-bnpl-landing__btn--primary:focus,
+.ts-bnpl-landing__btn--primary:active {
 	border-color: var(--ts-l-accent);
 	background: var(--ts-l-accent);
 	color: var(--ts-l-on-accent);
 }
-
-/*
- * هاور عمداً پس‌زمینه را روشن‌تر می‌کند، نه تیره‌تر.
- *
- * اکسنت برند یک سبز روشن است و متن رویش جوهر تیره. تیره کردن پس‌زمینه دو رنگ
- * را به هم نزدیک می‌کرد و متن محو می‌شد. روشن‌تر کردن، کنتراست را فقط بهتر
- * می‌کند. رنگ متن در هیچ حالتی عوض نمی‌شود.
- */
-
-.ts-bnpl-landing__btn--primary:hover,
-.ts-bnpl-landing__btn--primary:focus {
-	border-color: color-mix(in srgb, var(--ts-l-accent) 78%, #fff);
-	background: color-mix(in srgb, var(--ts-l-accent) 78%, #fff);
-	color: var(--ts-l-on-accent);
-}
-
-.ts-bnpl-landing__btn--primary:active {
-	border-color: color-mix(in srgb, var(--ts-l-accent) 60%, #fff);
-	background: color-mix(in srgb, var(--ts-l-accent) 60%, #fff);
-	color: var(--ts-l-on-accent);
-}
-
-/* دکمه‌ی ثانویه: در هاور پر می‌شود، پس متن باید به رنگ روی-اکسنت برگردد. */
 
 .ts-bnpl-landing__btn--ghost,
 .ts-bnpl-landing__btn--ghost:link,
-.ts-bnpl-landing__btn--ghost:visited {
+.ts-bnpl-landing__btn--ghost:visited,
+.ts-bnpl-landing__btn--ghost:hover,
+.ts-bnpl-landing__btn--ghost:focus,
+.ts-bnpl-landing__btn--ghost:active {
 	border-color: var(--ts-l-border);
 	background: var(--ts-l-surface);
 	color: var(--ts-l-strong);
-}
-
-.ts-bnpl-landing__btn--ghost:hover,
-.ts-bnpl-landing__btn--ghost:focus {
-	border-color: var(--ts-l-accent);
-	background: var(--ts-l-accent);
-	color: var(--ts-l-on-accent);
-}
-
-.ts-bnpl-landing__btn--ghost:active {
-	border-color: color-mix(in srgb, var(--ts-l-accent) 78%, #fff);
-	background: color-mix(in srgb, var(--ts-l-accent) 78%, #fff);
-	color: var(--ts-l-on-accent);
-}
-
-/*
- * پشتیبان برای مرورگرهایی که color-mix ندارند: به‌جای رنگ نامعتبر، همان اکسنت
- * با کمی شفافیت کمتر. متن دست‌نخورده می‌ماند، پس کنتراست هرگز نمی‌شکند.
- */
-
-/*
- * پشتیبان برای مرورگرهای بدون color-mix: فقط رنگ پایه، بدون opacity و بدون
- * filter. کم کردن شفافیتِ کل دکمه دقیقاً همان چیزی است که متن را محو می‌کرد.
- */
-
-@supports not (background: color-mix(in srgb, red 50%, #fff)) {
-
-	.ts-bnpl-landing__btn--primary:hover,
-	.ts-bnpl-landing__btn--primary:focus,
-	.ts-bnpl-landing__btn--primary:active,
-	.ts-bnpl-landing__btn--ghost:hover,
-	.ts-bnpl-landing__btn--ghost:focus,
-	.ts-bnpl-landing__btn--ghost:active {
-		border-color: var(--ts-l-accent);
-		background: var(--ts-l-accent);
-		color: var(--ts-l-on-accent);
-	}
 }
 
 /* ============================ بخش‌ها ============================ */

@@ -110,7 +110,6 @@ ts-bnpl/
 │   ├── css/ts-bnpl.css
 │   ├── css/ts-bnpl-landing.css
 │   ├── js/ts-bnpl.js
-│   ├── js/ts-bnpl-landing.js
 │   └── images/digipay.svg
 ├── languages/                         # ترجمه‌ها
 ├── tests/                             # تست‌های قرارداد

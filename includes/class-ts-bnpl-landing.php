@@ -159,21 +159,38 @@ class TS_BNPL_Landing {
 			return;
 		}
 
-		if ( ! wp_style_is( 'swiper', 'enqueued' ) ) {
-			wp_enqueue_style( 'swiper', THEME_ASSETS . 'plugins/swiper/swiper.min.css', array(), TS_BNPL_VERSION );
+		/*
+		 * نسخه‌ی bundle عمدی است، نه هسته‌ی خالی سوایپر.
+		 *
+		 * اسکریپت کاروسل قالب به ماژول‌های Navigation و Lazy نیاز دارد و آن‌ها
+		 * فقط در bundle هستند. هر صفحه‌ای در قالب که همان اسکریپت را لود
+		 * می‌کند هم همین بیلد را می‌دهد. نسخه‌ی Archive انتخاب شده تا با همان
+		 * شیت کارتی که بالاتر صف شد جفت بماند.
+		 */
+		$swiper_css = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.css';
+		$swiper_js  = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.js';
+
+		if ( ! wp_style_is( 'swiper', 'enqueued' ) && file_exists( $theme_dir . '/' . $swiper_css ) ) {
+			wp_enqueue_style( 'swiper', get_template_directory_uri() . '/' . $swiper_css, array(), TS_BNPL_VERSION );
 		}
 
-		if ( ! wp_script_is( 'swiper', 'enqueued' ) ) {
-			wp_enqueue_script( 'swiper', THEME_ASSETS . 'plugins/swiper/swiper.min.js', array(), TS_BNPL_VERSION, true );
+		if ( ! wp_script_is( 'swiper', 'enqueued' ) && file_exists( $theme_dir . '/' . $swiper_js ) ) {
+			wp_enqueue_script( 'swiper', get_template_directory_uri() . '/' . $swiper_js, array( 'jquery' ), TS_BNPL_VERSION, true );
 		}
 
-		wp_enqueue_script(
-			'ts-bnpl-landing',
-			TS_BNPL_URL . 'assets/js/ts-bnpl-landing.js',
-			array( 'swiper' ),
-			TS_BNPL_VERSION,
-			true
-		);
+		/*
+		 * اسکریپت کاروسل خود قالب، نه یک کپی از تنظیماتش.
+		 *
+		 * آن فایل عمداً slidesPerView سراسری ندارد، چون عرض و فاصله‌ی اسلایدها
+		 * از همان CSS ماژول می‌آید. نسخه‌ی قبلی افزونه slidesPerView و
+		 * spaceBetween می‌داد و مارجین اینلاین سوایپر روی مارجین CSS سوار
+		 * می‌شد؛ نتیجه‌اش عرض غلط کارت‌ها روی دسکتاپ بود.
+		 */
+		$carousel_rel = 'assets/js/modular/product-carousel.min.js';
+
+		if ( ! wp_script_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $carousel_rel ) ) {
+			wp_enqueue_script( 'product-carousel', THEME_ASSETS . 'js/modular/product-carousel.min.js', array( 'jquery', 'swiper' ), TS_BNPL_VERSION, true );
+		}
 	}
 
 	/*
@@ -607,7 +624,17 @@ class TS_BNPL_Landing {
 
 			$card      = self::card_template();
 			$is_mobile = defined( 'IS_MOBILE' ) ? IS_MOBILE : wp_is_mobile();
-			$slider_id = 'ts-bnpl-products-carousel';
+
+			/*
+			 * شناسه و کلاس‌های ناوبری عمداً همان قرارداد قالب‌اند.
+			 *
+			 * اسکریپت modular/product-carousel.js قالب روی هر .products-carousel
+			 * می‌چرخد و با اندیس حلقه به «products-carousel-{i}» وصل می‌شود. چون
+			 * در این صفحه فقط یک کاروسل هست، اندیس صفر است. این‌طوری همان
+			 * اسکریپت خود قالب راه‌اندازی‌اش می‌کند و لازم نیست تنظیمات سوایپر
+			 * را جای دیگری تکرار کنیم.
+			 */
+			$slider_id = 'products-carousel-0';
 			?>
 
 			<?php
@@ -638,8 +665,8 @@ class TS_BNPL_Landing {
 							?>
 						</div>
 					</div>
-					<div class="wbs-products-nav wbs-prev" id="<?php echo esc_attr( $slider_id ); ?>-prev"><i class="icon-arrow-right"></i></div>
-					<div class="wbs-products-nav wbs-next" id="<?php echo esc_attr( $slider_id ); ?>-next"><i class="icon-arrow-left"></i></div>
+					<div class="wbs-products-nav wbs-prev wbs-products-prev-0"><i class="icon-arrow-right"></i></div>
+					<div class="wbs-products-nav wbs-next wbs-products-next-0"><i class="icon-arrow-left"></i></div>
 				<?php else : ?>
 					<div class="products-carousel">
 						<?php
