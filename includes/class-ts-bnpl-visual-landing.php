@@ -59,7 +59,7 @@ class TS_BNPL_Visual_Landing {
 			return;
 		}
 
-		$deps = TS_BNPL_Landing::enqueue_theme_card_assets();
+		$deps = TS_BNPL_Landing::enqueue_theme_card_assets( true );
 		self::enqueue_faq_assets();
 
 		if ( wp_style_is( 'ts-faq', 'enqueued' ) ) {

@@ -173,10 +173,12 @@ class TS_BNPL_Landing {
 	 * عمداً هیچ استایل کارتی اینجا بازنویسی نمی‌شود؛ فقط همان فایل‌های قالب با
 	 * همان هندل‌ها صف می‌شوند تا اگر جای دیگری هم لود شده باشند تکرار نشوند.
 	 *
+	 * @param bool $force_swiper آیا بنر تصویری در موبایل هم bundle را لازم دارد؟
+	 *
 	 * @return string[] هندل شیت‌هایی که این صفحه از قالب می‌گیرد، تا شیت
 	 *                  لندینگ بتواند به آن‌ها وابسته شود و بعدشان چاپ شود.
 	 */
-	public static function enqueue_theme_card_assets() {
+	public static function enqueue_theme_card_assets( $force_swiper = false ) {
 		if ( ! defined( 'THEME_ASSETS' ) || ! defined( 'THEME_LIB' ) ) {
 			return array();
 		}
@@ -229,8 +231,8 @@ class TS_BNPL_Landing {
 			$deps[] = 'products-carousel';
 		}
 
-		// روی موبایل کاروسل یک اسکرول افقی ساده است و سوایپر لازم ندارد.
-		if ( $is_mobile ) {
+		// لندینگ قدیمی روی موبایل کاروسل ساده دارد؛ بنر لندینگ تصویری سوایپر را لازم دارد.
+		if ( $is_mobile && ! $force_swiper ) {
 			return array_values( array_unique( array_filter( $deps, 'wp_style_is' ) ) );
 		}
 
@@ -283,7 +285,7 @@ class TS_BNPL_Landing {
 		 */
 		$carousel_rel = 'assets/js/modular/product-carousel.min.js';
 
-		if ( ! wp_script_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $carousel_rel ) ) {
+		if ( ! $is_mobile && ! wp_script_is( 'product-carousel', 'enqueued' ) && file_exists( $theme_dir . '/' . $carousel_rel ) ) {
 			wp_enqueue_script( 'product-carousel', THEME_ASSETS . 'js/modular/product-carousel.min.js', array( 'jquery', 'swiper' ), TS_BNPL_VERSION, true );
 		}
 

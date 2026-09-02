@@ -1,0 +1,775 @@
+/**
+ * BNPL Visual Landing.
+ *
+ * Every component selector is scoped to the fourth presentation mode. The two
+ * body selectors only remove page chrome approved for that mode.
+ */
+
+body.ts-bnpl-visual-landing-page #site-main > .wbs-breadcrumb,
+body.ts-bnpl-visual-landing-page #site-main > .page-title {
+	display: none !important;
+}
+
+body.ts-bnpl-visual-landing-page #site-main > .page-content {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.ts-bnpl-visual-landing {
+	--ts-visual-ink: var(--commerce-heading, var(--text-primary, #002864));
+	--ts-visual-text: var(--commerce-text, var(--text-secondary, #34435a));
+	--ts-visual-muted: var(--text-muted, #6b7788);
+	--ts-visual-surface: var(--surface-card, var(--commerce-panel, #fff));
+	--ts-visual-soft: var(--surface-subtle, #f2f7fc);
+	--ts-visual-border: var(--border-subtle, #dfe7ef);
+	--ts-visual-accent: var(--brand-primary, #b6e30c);
+	--ts-visual-blue: var(--brand-secondary, #0d72e7);
+	--ts-visual-navy: #002864;
+	--ts-visual-radius: 20px;
+	--ts-visual-shadow: 0 18px 48px rgb(0 40 100 / 8%);
+	box-sizing: border-box;
+	display: grid;
+	gap: clamp(36px, 5vw, 72px);
+	width: 100%;
+	padding-block: clamp(12px, 2vw, 28px) clamp(48px, 7vw, 96px);
+	color: var(--ts-visual-text);
+	font-family: inherit;
+	direction: rtl;
+}
+
+.ts-bnpl-visual-landing *,
+.ts-bnpl-visual-landing *::before,
+.ts-bnpl-visual-landing *::after {
+	box-sizing: border-box;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing :is(h1, h2, h3, p, ul, ol) {
+	margin-top: 0 !important;
+	font-family: inherit !important;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing :is(h1, h2, h3) {
+	color: var(--ts-visual-ink) !important;
+	line-height: 1.45 !important;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing p {
+	color: var(--ts-visual-text) !important;
+	font-size: clamp(14px, 1.25vw, 17px) !important;
+	line-height: 2 !important;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a,
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a:hover,
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a:active {
+	text-decoration: none !important;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
+	max-width: 100% !important;
+	height: auto;
+}
+
+.ts-bnpl-visual-section {
+	position: relative;
+	min-width: 0;
+}
+
+.ts-bnpl-visual-heading {
+	max-width: 760px;
+	margin-block-end: 28px;
+}
+
+.ts-bnpl-visual-heading h2,
+.ts-bnpl-visual-split h2,
+.ts-bnpl-visual-final h2 {
+	margin-block-end: 10px !important;
+	font-size: clamp(24px, 2.7vw, 36px) !important;
+	font-weight: 800 !important;
+}
+
+.ts-bnpl-visual-heading p,
+.ts-bnpl-visual-split p,
+.ts-bnpl-visual-final p {
+	margin-block-end: 0 !important;
+}
+
+.ts-bnpl-visual-heading--action {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 24px;
+	max-width: none;
+}
+
+.ts-bnpl-visual-heading--action > a {
+	flex: 0 0 auto;
+	padding-block: 10px;
+	color: var(--ts-visual-blue) !important;
+	font-weight: 700;
+}
+
+.ts-bnpl-visual-eyebrow {
+	margin-block-end: 8px !important;
+	color: var(--ts-visual-blue) !important;
+	font-size: 13px !important;
+	font-weight: 800;
+	letter-spacing: -.01em;
+}
+
+.ts-bnpl-visual-lede {
+	font-size: clamp(15px, 1.5vw, 19px) !important;
+}
+
+/* Top promotional banner: exact homepage display ratios. */
+.ts-bnpl-visual-banner {
+	position: relative;
+	overflow: hidden;
+	width: 100%;
+	aspect-ratio: 1326 / 400;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: var(--ts-visual-radius);
+	background: var(--ts-visual-soft);
+	box-shadow: var(--ts-visual-shadow);
+}
+
+.ts-bnpl-visual-banner__track,
+.ts-bnpl-visual-banner__slide,
+.ts-bnpl-visual-banner__slide > a,
+.ts-bnpl-visual-banner__slide picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.ts-bnpl-visual-banner__image {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover;
+	object-position: center;
+}
+
+.ts-bnpl-visual-banner__control {
+	position: absolute;
+	z-index: 3;
+	top: 50%;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: 1px solid rgb(255 255 255 / 68%);
+	border-radius: 50%;
+	background: rgb(0 40 100 / 76%);
+	box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
+	color: #fff;
+	cursor: pointer;
+	transform: translateY(-50%);
+	transition: background-color .2s ease, transform .2s ease;
+}
+
+.ts-bnpl-visual-banner__control:hover {
+	background: var(--ts-visual-navy);
+}
+
+.ts-bnpl-visual-banner__prev {
+	inset-inline-start: 18px;
+}
+
+.ts-bnpl-visual-banner__next {
+	inset-inline-end: 18px;
+}
+
+.ts-bnpl-visual-banner__pagination {
+	position: absolute;
+	z-index: 3;
+	inset-inline: 0;
+	bottom: 14px !important;
+	display: flex;
+	justify-content: center;
+	gap: 7px;
+}
+
+.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet {
+	width: 9px;
+	height: 9px;
+	margin: 0 !important;
+	background: #fff;
+	opacity: .58;
+}
+
+.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active {
+	width: 28px;
+	border-radius: 999px;
+	background: var(--ts-visual-accent);
+	opacity: 1;
+}
+
+/* Hero */
+.ts-bnpl-visual-hero {
+	display: grid;
+	grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+	align-items: stretch;
+	overflow: hidden;
+	min-height: 520px;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: var(--ts-visual-radius);
+	background: linear-gradient(135deg, var(--ts-visual-soft), var(--ts-visual-surface));
+	box-shadow: var(--ts-visual-shadow);
+}
+
+.ts-bnpl-visual-hero__content {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	flex-direction: column;
+	overflow: hidden;
+	padding: clamp(32px, 5vw, 72px);
+}
+
+.ts-bnpl-visual-hero__content h1 {
+	max-width: 680px;
+	margin-block-end: 16px !important;
+	font-size: clamp(34px, 4vw, 58px) !important;
+	font-weight: 900 !important;
+	letter-spacing: -.035em;
+}
+
+.ts-bnpl-visual-hero__content > :not(.ts-bnpl-visual-hero__glyph) {
+	position: relative;
+	z-index: 1;
+}
+
+.ts-bnpl-visual-hero__glyph {
+	position: absolute;
+	inset-block-start: -150px;
+	inset-inline-end: -145px;
+	width: 440px;
+	height: 440px;
+	opacity: .07;
+	pointer-events: none;
+}
+
+.ts-bnpl-visual-hero__glyph img {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	animation: ts-bnpl-visual-spin 60s linear infinite;
+}
+
+@keyframes ts-bnpl-visual-spin {
+	to { transform: rotate(360deg); }
+}
+
+.ts-bnpl-visual-hero__benefits {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	width: 100%;
+	margin: 12px 0 28px !important;
+	padding: 0;
+	list-style: none;
+}
+
+.ts-bnpl-visual-hero__benefits li {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 54px;
+	padding: 10px 12px;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: 14px;
+	background: var(--ts-visual-surface);
+	background: color-mix(in srgb, var(--ts-visual-surface) 84%, transparent);
+	color: var(--ts-visual-ink);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.ts-bnpl-visual-hero__benefits i {
+	color: var(--ts-visual-blue);
+	font-size: 18px;
+}
+
+.ts-bnpl-visual-hero__media,
+.ts-bnpl-visual-hero__media picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.ts-bnpl-visual-hero__image {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover;
+	object-position: center;
+}
+
+.ts-bnpl-visual-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.ts-bnpl-visual-button {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	min-height: 46px;
+	padding-inline: 24px !important;
+}
+
+/* Providers */
+.ts-bnpl-visual-providers {
+	padding: clamp(28px, 4vw, 52px);
+	border: 1px solid var(--ts-visual-border);
+	border-radius: var(--ts-visual-radius);
+	background: var(--ts-visual-soft);
+}
+
+.ts-bnpl-visual-providers__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 16px;
+}
+
+.ts-bnpl-visual-providers__grid[data-provider-count="1"] {
+	grid-template-columns: minmax(280px, 620px);
+	justify-content: center;
+}
+
+.ts-bnpl-visual-provider {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	min-height: 150px;
+	padding: 24px;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: 18px;
+	background: var(--ts-visual-surface);
+	box-shadow: 0 12px 32px rgb(0 40 100 / 6%);
+	color: inherit !important;
+	transition: border-color .2s ease, transform .2s ease;
+}
+
+a.ts-bnpl-visual-provider:hover {
+	border-color: var(--ts-visual-blue);
+	transform: translateY(-2px);
+}
+
+.ts-bnpl-visual-provider img {
+	flex: 0 0 160px;
+	width: 160px !important;
+	height: 72px !important;
+	object-fit: contain;
+}
+
+.ts-bnpl-visual-provider h3 {
+	margin-block-end: 6px !important;
+	font-size: 20px !important;
+	font-weight: 800 !important;
+}
+
+.ts-bnpl-visual-provider p {
+	margin-block-end: 0 !important;
+	font-size: 14px !important;
+}
+
+/* Process flow */
+.ts-bnpl-visual-how {
+	padding-block: 12px;
+}
+
+.ts-bnpl-visual-steps {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 18px;
+	margin: 0 !important;
+	padding: 0;
+	list-style: none;
+	counter-reset: none;
+}
+
+.ts-bnpl-visual-steps::before {
+	position: absolute;
+	top: 42px;
+	inset-inline: 9%;
+	height: 1px;
+	background: var(--ts-visual-border);
+	content: "";
+}
+
+.ts-bnpl-visual-steps__item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	min-width: 0;
+	padding: 24px 18px;
+	text-align: center;
+}
+
+.ts-bnpl-visual-steps__item > i {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 58px;
+	height: 58px;
+	margin-block: 0 18px;
+	border: 8px solid var(--ts-visual-surface);
+	border-radius: 50%;
+	background: var(--ts-visual-soft);
+	color: var(--ts-visual-blue);
+	font-size: 22px;
+}
+
+.ts-bnpl-visual-steps__number {
+	position: absolute;
+	z-index: 2;
+	top: 12px;
+	inset-inline-start: calc(50% + 17px);
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--ts-visual-navy);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 800;
+}
+
+.ts-bnpl-visual-steps__item h3 {
+	margin-block-end: 8px !important;
+	font-size: 17px !important;
+	font-weight: 800 !important;
+}
+
+.ts-bnpl-visual-steps__item p {
+	margin-block-end: 0 !important;
+	font-size: 13px !important;
+}
+
+/* Reusable static image/content compositions. */
+.ts-bnpl-visual-split {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: stretch;
+	overflow: hidden;
+	min-height: 430px;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: var(--ts-visual-radius);
+	background: var(--ts-visual-surface);
+	box-shadow: var(--ts-visual-shadow);
+}
+
+.ts-bnpl-visual-split__content {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	flex-direction: column;
+	padding: clamp(30px, 5vw, 68px);
+}
+
+.ts-bnpl-visual-split__media,
+.ts-bnpl-visual-split__media picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.ts-bnpl-visual-split__image {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover;
+	object-position: center;
+}
+
+.ts-bnpl-visual-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-block-start: 18px;
+	padding: 9px 14px;
+	border-radius: 999px;
+	background: var(--ts-visual-soft);
+	background: color-mix(in srgb, var(--ts-visual-accent) 23%, var(--ts-visual-surface));
+	color: var(--ts-visual-ink);
+	font-size: 13px;
+	font-weight: 800;
+}
+
+.ts-bnpl-visual-conditions {
+	background: var(--ts-visual-soft);
+}
+
+/* Canonical product carousel; only the section frame/navigation is adjusted. */
+.ts-bnpl-visual-products {
+	min-width: 0;
+}
+
+.ts-bnpl-visual-products__carousel {
+	position: relative;
+	min-width: 0;
+	padding-block: 6px 12px;
+}
+
+.ts-bnpl-visual-products__carousel .wbs-products-nav {
+	border: 0;
+	cursor: pointer;
+}
+
+.ts-bnpl-visual-empty {
+	margin: 0 !important;
+	padding: 24px;
+	border: 1px dashed var(--ts-visual-border);
+	border-radius: 16px;
+	background: var(--ts-visual-soft);
+	text-align: center;
+}
+
+/* FAQ uses the theme accordion runtime and card markup. */
+.ts-bnpl-visual-faq__items {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	gap: 12px 18px;
+}
+
+.ts-bnpl-visual-faq__items > details {
+	border: 1px solid var(--ts-visual-border);
+	border-radius: 14px;
+	background: var(--ts-visual-surface);
+}
+
+.ts-bnpl-visual-faq__items > details summary {
+	padding: 18px;
+	color: var(--ts-visual-ink);
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.ts-bnpl-visual-faq__items > details p {
+	padding: 0 18px 18px;
+}
+
+/* Final static CTA. */
+.ts-bnpl-visual-final {
+	display: grid;
+	grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+	align-items: stretch;
+	overflow: hidden;
+	min-height: 330px;
+	border-radius: var(--ts-visual-radius);
+	background: var(--ts-visual-navy);
+	box-shadow: 0 24px 56px rgb(0 40 100 / 22%);
+}
+
+.ts-bnpl-visual-final__content {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	flex-direction: column;
+	padding: clamp(32px, 5vw, 68px);
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) {
+	color: #fff !important;
+}
+
+.ts-bnpl-visual-final__media,
+.ts-bnpl-visual-final__media picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.ts-bnpl-visual-final__image {
+	display: block;
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover;
+	object-position: center;
+}
+
+/* The theme globally removes outlines, so restore an explicit visible state. */
+.ts-bnpl-visual-landing :is(a, button, summary):focus-visible {
+	outline: 3px solid var(--ts-visual-blue) !important;
+	outline-offset: 3px !important;
+}
+
+@media (max-width: 991.98px) {
+	.ts-bnpl-visual-hero {
+		grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+		min-height: 460px;
+	}
+
+	.ts-bnpl-visual-hero__content {
+		padding: 36px;
+	}
+
+	.ts-bnpl-visual-hero__benefits {
+		grid-template-columns: 1fr;
+	}
+
+	.ts-bnpl-visual-steps {
+		gap: 4px;
+	}
+
+	.ts-bnpl-visual-steps__item {
+		padding-inline: 8px;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.ts-bnpl-visual-landing {
+		gap: 36px;
+		padding-block-start: 4px;
+	}
+
+	.ts-bnpl-visual-banner__control {
+		display: none;
+	}
+
+	.ts-bnpl-visual-hero,
+	.ts-bnpl-visual-split,
+	.ts-bnpl-visual-final {
+		grid-template-columns: 1fr;
+	}
+
+	.ts-bnpl-visual-hero {
+		min-height: 0;
+	}
+
+	.ts-bnpl-visual-hero__content,
+	.ts-bnpl-visual-split__content,
+	.ts-bnpl-visual-final__content {
+		padding: 28px 22px;
+	}
+
+	.ts-bnpl-visual-hero__media,
+	.ts-bnpl-visual-split__media,
+	.ts-bnpl-visual-final__media {
+		aspect-ratio: 1 / 1;
+	}
+
+	.ts-bnpl-visual-hero__content h1 {
+		font-size: clamp(30px, 9vw, 42px) !important;
+	}
+
+	.ts-bnpl-visual-actions {
+		align-items: stretch;
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.ts-bnpl-visual-button {
+		width: 100%;
+	}
+
+	.ts-bnpl-visual-providers {
+		padding: 24px 18px;
+	}
+
+	.ts-bnpl-visual-provider {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.ts-bnpl-visual-provider img {
+		flex-basis: auto;
+	}
+
+	.ts-bnpl-visual-steps {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+
+	.ts-bnpl-visual-steps::before {
+		top: 28px;
+		bottom: 28px;
+		inset-inline-start: 28px;
+		inset-inline-end: auto;
+		width: 1px;
+		height: auto;
+	}
+
+	.ts-bnpl-visual-steps__item {
+		display: grid;
+		grid-template-columns: 58px 1fr;
+		align-items: center;
+		gap: 0 16px;
+		padding: 14px 0;
+		text-align: start;
+	}
+
+	.ts-bnpl-visual-steps__item > i {
+		grid-row: 1 / span 2;
+		margin: 0;
+	}
+
+	.ts-bnpl-visual-steps__number {
+		top: 5px;
+		inset-inline-start: 40px;
+	}
+
+	.ts-bnpl-visual-steps__item h3,
+	.ts-bnpl-visual-steps__item p {
+		grid-column: 2;
+		text-align: start;
+	}
+
+	.ts-bnpl-visual-heading--action {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.ts-bnpl-visual-faq__items {
+		grid-template-columns: 1fr;
+	}
+
+	.ts-bnpl-visual-split--reverse .ts-bnpl-visual-split__content {
+		order: -1;
+	}
+
+	.ts-bnpl-visual-products__carousel .products-carousel {
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		overscroll-behavior-inline: contain;
+	}
+}
+
+@media (max-width: 650px) {
+	.ts-bnpl-visual-banner {
+		aspect-ratio: 4 / 3;
+		border-radius: 16px;
+	}
+
+	.ts-bnpl-visual-banner__pagination {
+		bottom: 10px !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ts-bnpl-visual-hero__glyph img {
+		animation: none;
+	}
+
+	.ts-bnpl-visual-landing *,
+	.ts-bnpl-visual-landing *::before,
+	.ts-bnpl-visual-landing *::after {
+		scroll-behavior: auto !important;
+		transition-duration: .01ms !important;
+		animation-duration: .01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}

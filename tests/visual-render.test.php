@@ -14,7 +14,13 @@ class TS_BNPL_Landing {
 	public static function get_page_id() { return 42; }
 	public static function get_eligible_product_ids() { return array( 101, 102 ); }
 	public static function shop_url() { return 'https://example.test/shop/?ts_bnpl=1'; }
-	public static function enqueue_theme_card_assets() { self::$assets_enqueued = true; return array( 'archive', 'products-carousel' ); }
+	public static function enqueue_theme_card_assets( $force_swiper = false ) {
+		self::$assets_enqueued = true;
+		if ( $force_swiper ) {
+			wp_enqueue_script( 'swiper', 'https://example.test/theme/swiper-bundle.min.js', array(), '11', true );
+		}
+		return array( 'archive', 'products-carousel' );
+	}
 	public static function card_template() { return THEME_COMPONENTS . 'product-cards/simple-card.php'; }
 	public static function hero_logo_url() { return 'https://example.test/theme/images/logo.svg'; }
 }
@@ -132,5 +138,6 @@ TS_BNPL_Visual_Landing::enqueue_assets();
 ts_test_assert_true( TS_BNPL_Landing::$assets_enqueued, 'renderer reuses the existing theme card/carousel bridge' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_styles']['ts-bnpl-visual-landing'] ), 'Visual stylesheet is page-scoped' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['ts-bnpl-visual-landing'] ), 'multi-banner page receives the Visual initializer' );
+ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['swiper'] ), 'top banner forces the existing Swiper bundle on every viewport' );
 
 ts_test_finish();
