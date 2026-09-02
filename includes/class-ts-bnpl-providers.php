@@ -170,4 +170,3 @@ class TS_BNPL_Providers {
 			: false;
 	}
 }
-

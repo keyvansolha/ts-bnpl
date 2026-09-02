@@ -29,4 +29,3 @@ if ( method_exists( 'TS_BNPL_Display', 'is_landing_mode' ) ) {
 }
 
 ts_test_finish();
-

@@ -124,4 +124,3 @@
 		}
 	} );
 } )( window.jQuery, window.wp );
-

@@ -283,4 +283,3 @@ class TS_BNPL_Visual_Settings {
 		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $length ) : substr( $value, 0, $length );
 	}
 }
-

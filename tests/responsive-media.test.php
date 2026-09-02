@@ -60,4 +60,3 @@ $avif_only = TS_BNPL_Responsive_Media::render( array( 'desktop_avif_id' => 1, 'd
 ts_test_assert_same( '', $avif_only, 'AVIF-only media never emits a broken img fallback' );
 
 ts_test_finish();
-

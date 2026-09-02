@@ -189,4 +189,3 @@ class TS_BNPL_Responsive_Media {
 		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $length ) : substr( $value, 0, $length );
 	}
 }
-

@@ -62,4 +62,3 @@ ts_test_assert_true( is_wp_error( $error ), 'malformed payload is rejected' );
 ts_test_assert_same( '/keep', $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ]['banners'][0]['url'], 'failed save preserves the previous option' );
 
 ts_test_finish();
-

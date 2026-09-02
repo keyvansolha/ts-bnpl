@@ -424,4 +424,3 @@ class TS_BNPL_Visual_Admin {
 		<?php
 	}
 }
-
