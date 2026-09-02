@@ -129,7 +129,10 @@ ts_test_assert_same( 1, substr_count( $html, 'data-ts-bnpl-visual-banner' ), 'on
 ts_test_assert_contains( 'theme/images/logo.svg', $html, 'Hero reuses the existing rotating SVG' );
 ts_test_assert_same( 4, substr_count( $html, 'ts-bnpl-visual-steps__item' ), 'purchase flow keeps exactly four steps' );
 ts_test_assert_contains( 'درباره‌ی مبلغ نهایی', $html, 'conditions retain the current factual subject' );
+ts_test_assert_contains( 'بر اساس روش اعتباری‌ای که انتخاب می‌کنید مشخص و به شما نمایش داده می‌شود.', $html, 'conditions preserve the existing factual pricing explanation' );
 ts_test_assert_contains( 'آیا همه‌ی کالاهای سایت را می‌شود اعتباری خرید؟', $html, 'FAQ retains current content' );
+ts_test_assert_contains( 'اگر کالایی در سبد این امکان را نداشته باشد، روش‌های اعتباری در مرحله‌ی پرداخت نمایش داده نمی‌شوند.', $html, 'FAQ keeps the existing multi-item eligibility answer intact' );
+ts_test_assert_contains( 'تنها تفاوت، روش پرداخت است.', $html, 'FAQ keeps the existing fulfilment answer intact' );
 ts_test_assert_contains( 'دیجی‌پی', $html, 'active DigiPay provider is rendered' );
 ts_test_assert_contains( 'data-product-id="101"', $html, 'first eligible product uses the canonical card boundary' );
 ts_test_assert_contains( 'data-product-id="102"', $html, 'second eligible product stays dynamic' );
@@ -139,5 +142,32 @@ ts_test_assert_true( TS_BNPL_Landing::$assets_enqueued, 'renderer reuses the exi
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_styles']['ts-bnpl-visual-landing'] ), 'Visual stylesheet is page-scoped' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['ts-bnpl-visual-landing'] ), 'multi-banner page receives the Visual initializer' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['swiper'] ), 'top banner forces the existing Swiper bundle on every viewport' );
+
+$text_only_settings = TS_BNPL_Visual_Settings::defaults();
+$text_only_settings['banners'] = array( array( 'media' => $media, 'url' => '' ) );
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = $text_only_settings;
+$text_only_html = TS_BNPL_Visual_Landing::landing_html();
+
+ts_test_assert_contains( 'data-slide-count="1"', $text_only_html, 'one valid banner renders as a static banner' );
+ts_test_assert_false( false !== strpos( $text_only_html, 'ts-bnpl-visual-banner__control' ), 'one banner has no slider controls' );
+ts_test_assert_contains( 'ts-bnpl-visual-hero--text-only', $text_only_html, 'Hero rebalances when its optional visual is absent' );
+ts_test_assert_contains( 'ts-bnpl-visual-split--text-only', $text_only_html, 'split sections rebalance when optional visuals are absent' );
+ts_test_assert_contains( 'ts-bnpl-visual-final--text-only', $text_only_html, 'final CTA rebalances when its optional visual is absent' );
+
+$linked_media = $media;
+$linked_media['alt'] = '';
+$text_only_settings['banners'] = array( array( 'media' => $linked_media, 'url' => '/linked-offer' ) );
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = $text_only_settings;
+$linked_banner_html = TS_BNPL_Visual_Landing::landing_html();
+ts_test_assert_contains( 'aria-label="مشاهده پیشنهاد خرید اعتباری"', $linked_banner_html, 'a linked decorative banner always has an accessible name' );
+
+$text_only_settings['banners'] = array();
+$text_only_settings['hero']['media'] = $media;
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = $text_only_settings;
+$no_banner_html = TS_BNPL_Visual_Landing::landing_html();
+ts_test_assert_false( false !== strpos( $no_banner_html, '<section class="ts-bnpl-visual-banner' ), 'zero valid banners omit the banner section' );
+ts_test_assert_contains( 'class="ts-bnpl-visual-hero__image"', $no_banner_html, 'Hero visual becomes the first artwork when no banner is configured' );
+ts_test_assert_contains( 'loading="eager"', $no_banner_html, 'above-fold Hero visual is not lazy-loaded when no banner precedes it' );
+ts_test_assert_contains( 'fetchpriority="high"', $no_banner_html, 'above-fold Hero visual receives LCP priority when no banner precedes it' );
 
 ts_test_finish();

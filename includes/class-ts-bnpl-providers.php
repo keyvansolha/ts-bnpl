@@ -35,9 +35,11 @@ class TS_BNPL_Providers {
 			}
 
 			$choices[ $gateway_id ] = array(
-				'id'      => $gateway_id,
-				'name'    => '' !== trim( $name ) ? trim( $name ) : $gateway_id,
-				'gateway' => $gateway,
+				'id'          => $gateway_id,
+				'name'        => '' !== trim( $name ) ? trim( $name ) : $gateway_id,
+				'gateway'     => $gateway,
+				'operational' => self::is_operational( $gateway ) && ! ( TS_BNPL_GATEWAY_ID === $gateway_id && self::is_test_mode() ),
+				'status'      => self::admin_status( $gateway_id, $gateway ),
 			);
 		}
 
@@ -52,7 +54,7 @@ class TS_BNPL_Providers {
 	 * @return array<int,array<string,mixed>>
 	 */
 	public static function public_entries( $entries ) {
-		if ( ! is_array( $entries ) || self::is_test_mode() ) {
+		if ( ! is_array( $entries ) ) {
 			return array();
 		}
 
@@ -71,7 +73,8 @@ class TS_BNPL_Providers {
 				'' === $provider_id ||
 				empty( $entry['display_enabled'] ) ||
 				isset( $seen[ $provider_id ] ) ||
-				! isset( $choices[ $provider_id ] )
+				! isset( $choices[ $provider_id ] ) ||
+				( TS_BNPL_GATEWAY_ID === $provider_id && self::is_test_mode() )
 			) {
 				continue;
 			}
@@ -157,6 +160,28 @@ class TS_BNPL_Providers {
 		} catch ( Throwable $error ) {
 			return false;
 		}
+	}
+
+	/**
+	 * پیام وضعیت برای مدیر؛ هیچ اثری روی وضعیت واقعی پرداخت ندارد.
+	 *
+	 * @param string $provider_id شناسه‌ی درگاه.
+	 * @param mixed  $gateway     نمونه‌ی ووکامرس.
+	 *
+	 * @return string
+	 */
+	private static function admin_status( $provider_id, $gateway ) {
+		if ( ! is_object( $gateway ) || ! isset( $gateway->enabled ) || 'yes' !== $gateway->enabled ) {
+			return __( 'درگاه در ووکامرس غیرفعال است و در لندینگ عمومی نمایش داده نمی‌شود.', 'ts-bnpl' );
+		}
+		if ( TS_BNPL_GATEWAY_ID === $provider_id && self::is_test_mode() ) {
+			return __( 'درگاه در حالت آزمایشی است و به‌عنوان سرویس عمومی فعال نمایش داده نمی‌شود.', 'ts-bnpl' );
+		}
+		if ( ! self::is_operational( $gateway ) ) {
+			return __( 'درگاه هنوز کامل پیکربندی یا در دسترس نیست و در لندینگ عمومی نمایش داده نمی‌شود.', 'ts-bnpl' );
+		}
+
+		return '';
 	}
 
 	/**

@@ -61,7 +61,10 @@ $digipay->available = false;
 ts_test_assert_same( 0, count( TS_BNPL_Providers::public_entries( $entries ) ), 'unconfigured providers are omitted' );
 
 $digipay->available              = true;
+$future->enabled                 = 'yes';
 $GLOBALS['ts_bnpl_test_mode']    = true;
-ts_test_assert_same( 0, count( TS_BNPL_Providers::public_entries( $entries ) ), 'test mode never advertises an active public provider' );
+$test_mode_entries = TS_BNPL_Providers::public_entries( $entries );
+ts_test_assert_same( 1, count( $test_mode_entries ), 'DigiPay test mode does not hide unrelated operational providers' );
+ts_test_assert_same( 'future_credit', $test_mode_entries[0]['provider_id'], 'test mode excludes DigiPay specifically' );
 
 ts_test_finish();

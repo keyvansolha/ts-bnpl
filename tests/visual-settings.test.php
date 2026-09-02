@@ -61,4 +61,23 @@ $error = TS_BNPL_Visual_Settings::save( 'malformed' );
 ts_test_assert_true( is_wp_error( $error ), 'malformed payload is rejected' );
 ts_test_assert_same( '/keep', $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ]['banners'][0]['url'], 'failed save preserves the previous option' );
 
+$schema_error = TS_BNPL_Visual_Settings::save( array( 'schema_version' => 999 ) );
+ts_test_assert_true( is_wp_error( $schema_error ), 'unsupported future schemas are rejected' );
+ts_test_assert_same( '/keep', $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ]['banners'][0]['url'], 'unsupported schema preserves the previous option' );
+
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = array(
+	'schema_version' => 1,
+	'banners'       => array(),
+	'providers'     => array(
+		array( 'provider_id' => 'future_credit', 'display_enabled' => true, 'display_name' => 'آینده' ),
+	),
+);
+$temporarily_missing = TS_BNPL_Visual_Settings::get();
+ts_test_assert_same( 'future_credit', $temporarily_missing['providers'][0]['provider_id'], 'a previously trusted provider survives a temporary gateway outage' );
+
+$temporarily_missing['providers'][] = array( 'provider_id' => 'invented_gateway', 'display_enabled' => true );
+$resaved = TS_BNPL_Visual_Settings::save( $temporarily_missing );
+ts_test_assert_same( 1, count( $resaved['providers'] ), 'a new unregistered provider ID is still rejected' );
+ts_test_assert_same( 'future_credit', $resaved['providers'][0]['provider_id'], 'trusted unavailable provider remains editable across an atomic save' );
+
 ts_test_finish();

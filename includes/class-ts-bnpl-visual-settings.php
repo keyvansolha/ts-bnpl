@@ -65,7 +65,7 @@ class TS_BNPL_Visual_Settings {
 			'conditions'    => array(
 				'title'       => 'درباره‌ی مبلغ نهایی',
 				'lead'        => 'قیمتی که در صفحه‌ی کالا می‌بینید، قیمت خرید نقدی است. اگر پرداخت را با یک روش اعتباری انجام دهید، مبلغ نهایی می‌تواند با این عدد متفاوت باشد.',
-				'description' => 'مبلغ دقیق و شرایط پرداخت در مرحله‌ی تسویه‌حساب و بر اساس روش اعتباری انتخابی نمایش داده می‌شود. پیش از تأیید نهایی فرصت دارید شرایط را ببینید و در صورت تمایل به پرداخت نقدی برگردید.',
+				'description' => 'مبلغ دقیق و شرایط پرداخت، در مرحله‌ی تسویه‌حساب و بر اساس روش اعتباری‌ای که انتخاب می‌کنید مشخص و به شما نمایش داده می‌شود. پیش از تأیید نهایی، فرصت دارید مبلغ و شرایط را ببینید و در صورت تمایل به پرداخت نقدی برگردید.',
 				'media'       => $media,
 			),
 			'final_cta'     => array(
@@ -90,7 +90,7 @@ class TS_BNPL_Visual_Settings {
 			return self::defaults();
 		}
 
-		$normalized = self::sanitize( $stored );
+		$normalized = self::sanitize( $stored, self::provider_ids( $stored ) );
 
 		return is_wp_error( $normalized ) ? self::defaults() : $normalized;
 	}
@@ -103,7 +103,8 @@ class TS_BNPL_Visual_Settings {
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public static function save( $raw ) {
-		$normalized = self::sanitize( $raw );
+		$stored     = get_option( self::OPTION, array() );
+		$normalized = self::sanitize( $raw, self::provider_ids( $stored ) );
 
 		if ( is_wp_error( $normalized ) ) {
 			return $normalized;
@@ -121,13 +122,17 @@ class TS_BNPL_Visual_Settings {
 	/**
 	 * پاکسازی کامل payload.
 	 *
-	 * @param mixed $raw ورودی.
+	 * @param mixed    $raw                  ورودی.
+	 * @param string[] $trusted_provider_ids شناسه‌هایی که قبلاً ذخیره شده‌اند.
 	 *
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public static function sanitize( $raw ) {
+	public static function sanitize( $raw, $trusted_provider_ids = array() ) {
 		if ( ! is_array( $raw ) ) {
 			return new WP_Error( 'ts_bnpl_visual_invalid_payload', __( 'ساختار تنظیمات لندینگ تصویری معتبر نیست.', 'ts-bnpl' ) );
+		}
+		if ( isset( $raw['schema_version'] ) && self::SCHEMA_VERSION !== (int) $raw['schema_version'] ) {
+			return new WP_Error( 'ts_bnpl_visual_unsupported_schema', __( 'نسخه‌ی ساختار تنظیمات لندینگ تصویری پشتیبانی نمی‌شود.', 'ts-bnpl' ) );
 		}
 
 		$defaults = self::defaults();
@@ -136,7 +141,7 @@ class TS_BNPL_Visual_Settings {
 			'schema_version' => self::SCHEMA_VERSION,
 			'banners'       => self::sanitize_banners( isset( $raw['banners'] ) && is_array( $raw['banners'] ) ? $raw['banners'] : $defaults['banners'] ),
 			'hero'          => self::sanitize_hero( isset( $raw['hero'] ) && is_array( $raw['hero'] ) ? $raw['hero'] : array(), $defaults['hero'] ),
-			'providers'     => self::sanitize_providers( isset( $raw['providers'] ) && is_array( $raw['providers'] ) ? $raw['providers'] : $defaults['providers'] ),
+			'providers'     => self::sanitize_providers( isset( $raw['providers'] ) && is_array( $raw['providers'] ) ? $raw['providers'] : $defaults['providers'], $trusted_provider_ids ),
 			'eligibility'   => self::sanitize_content_section( isset( $raw['eligibility'] ) ? $raw['eligibility'] : array(), $defaults['eligibility'] ),
 			'conditions'    => self::sanitize_conditions( isset( $raw['conditions'] ) ? $raw['conditions'] : array(), $defaults['conditions'] ),
 			'final_cta'     => self::sanitize_cta( isset( $raw['final_cta'] ) ? $raw['final_cta'] : array(), $defaults['final_cta'] ),
@@ -181,12 +186,14 @@ class TS_BNPL_Visual_Settings {
 	}
 
 	/** @return array<int,array<string,mixed>> */
-	private static function sanitize_providers( $rows ) {
+	private static function sanitize_providers( $rows, $trusted_provider_ids = array() ) {
 		$clean   = array();
 		$seen    = array();
 		$choices = class_exists( 'TS_BNPL_Providers' ) ? TS_BNPL_Providers::choices() : array();
 		$known   = array_keys( $choices );
 		$known[] = TS_BNPL_GATEWAY_ID;
+		$known   = array_merge( $known, array_map( 'sanitize_key', is_array( $trusted_provider_ids ) ? $trusted_provider_ids : array() ) );
+		$known   = array_values( array_unique( array_filter( $known ) ) );
 
 		foreach ( array_slice( array_values( $rows ), 0, self::MAX_ROWS ) as $row ) {
 			if ( ! is_array( $row ) ) {
@@ -208,6 +215,32 @@ class TS_BNPL_Visual_Settings {
 		}
 
 		return array_values( $clean );
+	}
+
+	/**
+	 * شناسه‌های ذخیره‌شده قبلی برای حفظ ردیف هنگام قطع موقت یک درگاه.
+	 *
+	 * این فهرست فقط از option قبلی می‌آید؛ یک شناسه‌ی آزاد در درخواست جدید
+	 * همچنان رد می‌شود.
+	 *
+	 * @param mixed $settings تنظیمات ذخیره‌شده.
+	 *
+	 * @return string[]
+	 */
+	private static function provider_ids( $settings ) {
+		$rows = is_array( $settings ) && isset( $settings['providers'] ) && is_array( $settings['providers'] )
+			? $settings['providers']
+			: array();
+		$ids = array();
+
+		foreach ( $rows as $row ) {
+			$id = is_array( $row ) && isset( $row['provider_id'] ) ? sanitize_key( $row['provider_id'] ) : '';
+			if ( '' !== $id ) {
+				$ids[] = $id;
+			}
+		}
+
+		return array_values( array_unique( $ids ) );
 	}
 
 	/** @return array<string,mixed> */

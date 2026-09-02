@@ -247,7 +247,7 @@ php tests/responsive-media.test.php
 php tests/providers.test.php
 php tests/visual-admin.test.php
 php tests/visual-render.test.php
-node --test tests/visual-banner.test.mjs
+node --test tests/*.test.mjs
 ```
 
 ### صفحه‌ی محصول

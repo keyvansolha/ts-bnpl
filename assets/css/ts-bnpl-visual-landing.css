@@ -48,7 +48,14 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing :is(h1, h
 	font-family: inherit !important;
 }
 
-body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing :is(h1, h2, h3) {
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing :is(
+	.ts-bnpl-visual-hero__content h1,
+	.ts-bnpl-visual-heading h2,
+	.ts-bnpl-visual-split__content h2,
+	.ts-bnpl-visual-final__content h2,
+	.ts-bnpl-visual-provider h3,
+	.ts-bnpl-visual-steps__item h3
+) {
 	color: var(--ts-visual-ink) !important;
 	line-height: 1.45 !important;
 }
@@ -57,17 +64,25 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing p {
 	color: var(--ts-visual-text) !important;
 	font-size: clamp(14px, 1.25vw, 17px) !important;
 	line-height: 2 !important;
+	text-align: start !important;
+	text-align-last: auto;
 }
 
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a,
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a:hover,
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing a:active {
+	color: var(--ts-visual-link, inherit);
+	font-variation-settings: var(--ts-visual-link-weight, inherit);
 	text-decoration: none !important;
 }
 
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
-	max-width: 100% !important;
+	width: auto;
+	max-width: 100%;
 	height: auto;
+	margin: 0 !important;
+	float: none;
+	border-radius: 0;
 }
 
 .ts-bnpl-visual-section {
@@ -270,8 +285,8 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	gap: 10px;
 	width: 100%;
 	margin: 12px 0 28px !important;
-	padding: 0;
-	list-style: none;
+	padding: 0 !important;
+	list-style: none !important;
 }
 
 .ts-bnpl-visual-hero__benefits li {
@@ -318,11 +333,16 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 }
 
 .ts-bnpl-visual-button {
+	--ts-visual-link: var(--ts-visual-navy);
 	display: inline-flex !important;
 	align-items: center;
 	justify-content: center;
 	min-height: 46px;
 	padding-inline: 24px !important;
+}
+
+.ts-bnpl-visual-button--secondary {
+	--ts-visual-link: var(--black-white, var(--ts-visual-ink));
 }
 
 /* Providers */
@@ -528,6 +548,19 @@ a.ts-bnpl-visual-provider:hover {
 	cursor: pointer;
 }
 
+/* The Page editor layer uses !important heading sizes; restore theme card values. */
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carousel .primary-title {
+	margin: 0 0 7px !important;
+	font-size: 14px !important;
+	line-height: normal !important;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carousel .sub-title {
+	margin: 0 !important;
+	font-size: 14px !important;
+	line-height: normal !important;
+}
+
 .ts-bnpl-visual-empty {
 	margin: 0 !important;
 	padding: 24px;
@@ -560,6 +593,13 @@ a.ts-bnpl-visual-provider:hover {
 
 .ts-bnpl-visual-faq__items > details p {
 	padding: 0 18px 18px;
+}
+
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-faq .ts-faq__heading {
+	margin: 0 !important;
+	color: inherit !important;
+	font: inherit !important;
+	line-height: normal !important;
 }
 
 /* Final static CTA. */
@@ -601,8 +641,16 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	object-position: center;
 }
 
+/* Optional artwork must never leave an empty desktop column. */
+.ts-bnpl-visual-hero--text-only,
+.ts-bnpl-visual-split--text-only,
+.ts-bnpl-visual-final--text-only {
+	grid-template-columns: minmax(0, 1fr);
+	min-height: 0;
+}
+
 /* The theme globally removes outlines, so restore an explicit visible state. */
-.ts-bnpl-visual-landing :is(a, button, summary):focus-visible {
+.ts-bnpl-visual-landing :is(a, button, summary, .swiper-pagination-bullet):focus-visible {
 	outline: 3px solid var(--ts-visual-blue) !important;
 	outline-offset: 3px !important;
 }

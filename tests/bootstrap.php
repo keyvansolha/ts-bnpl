@@ -277,7 +277,8 @@ function get_queried_object_id() {
 	return 99;
 }
 
-function current_user_can( $capability ) {
+function current_user_can( $capability, ...$args ) {
+	unset( $args );
 	return ! empty( $GLOBALS['ts_bnpl_test_capabilities'][ $capability ] );
 }
 

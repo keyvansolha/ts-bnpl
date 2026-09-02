@@ -114,13 +114,14 @@ class TS_BNPL_Visual_Landing {
 	 * @return string
 	 */
 	public static function landing_html() {
-		$settings = TS_BNPL_Visual_Settings::get();
+		$settings    = TS_BNPL_Visual_Settings::get();
+		$has_banners = ! empty( self::valid_banners( $settings['banners'] ) );
 
 		ob_start();
 		?>
 		<div class="ts-bnpl-visual-landing" dir="rtl">
 			<?php self::section_banners( $settings['banners'] ); ?>
-			<?php self::section_hero( $settings['hero'] ); ?>
+			<?php self::section_hero( $settings['hero'], ! $has_banners ); ?>
 			<?php self::section_providers( $settings['providers'] ); ?>
 			<?php self::section_steps(); ?>
 			<?php self::section_eligibility( $settings['eligibility'] ); ?>
@@ -146,8 +147,9 @@ class TS_BNPL_Visual_Landing {
 		<section class="ts-bnpl-visual-banner<?php echo $count > 1 ? ' swiper' : ' ts-bnpl-visual-banner--static'; ?>" data-ts-bnpl-visual-banner data-slide-count="<?php echo esc_attr( (string) $count ); ?>" aria-label="<?php esc_attr_e( 'پیشنهادهای خرید اعتباری', 'ts-bnpl' ); ?>">
 			<div class="ts-bnpl-visual-banner__track<?php echo $count > 1 ? ' swiper-wrapper' : ''; ?>">
 				<?php foreach ( $banners as $index => $banner ) : ?>
+					<?php $link_label = '' !== $banner['media']['alt'] ? $banner['media']['alt'] : __( 'مشاهده پیشنهاد خرید اعتباری', 'ts-bnpl' ); ?>
 					<div class="ts-bnpl-visual-banner__slide<?php echo $count > 1 ? ' swiper-slide' : ''; ?>">
-						<?php if ( '' !== $banner['url'] ) : ?><a href="<?php echo esc_url( $banner['url'] ); ?>" aria-label="<?php echo esc_attr( $banner['media']['alt'] ); ?>"><?php endif; ?>
+						<?php if ( '' !== $banner['url'] ) : ?><a href="<?php echo esc_url( $banner['url'] ); ?>" aria-label="<?php echo esc_attr( $link_label ); ?>"><?php endif; ?>
 						<?php
 						echo TS_BNPL_Responsive_Media::render(
 							$banner['media'],
@@ -173,18 +175,19 @@ class TS_BNPL_Visual_Landing {
 	}
 
 	/** @return void */
-	private static function section_hero( $hero ) {
+	private static function section_hero( $hero, $is_first_visual = false ) {
 		$visual = TS_BNPL_Responsive_Media::render(
 			$hero['media'],
 			array(
-				'class'   => 'ts-bnpl-visual-hero__image',
-				'loading' => 'lazy',
-				'sizes'   => '(max-width: 767px) 100vw, 50vw',
+				'class'         => 'ts-bnpl-visual-hero__image',
+				'loading'       => $is_first_visual ? 'eager' : 'lazy',
+				'fetchpriority' => $is_first_visual ? 'high' : '',
+				'sizes'         => '(max-width: 767px) 100vw, 50vw',
 			)
 		);
 		$logo = TS_BNPL_Landing::hero_logo_url();
 		?>
-		<section class="ts-bnpl-visual-hero ts-bnpl-visual-section">
+		<section class="ts-bnpl-visual-hero ts-bnpl-visual-section<?php echo '' === $visual ? ' ts-bnpl-visual-hero--text-only' : ''; ?>">
 			<div class="ts-bnpl-visual-hero__content">
 				<?php if ( $logo ) : ?>
 					<span class="ts-bnpl-visual-hero__glyph" aria-hidden="true"><img src="<?php echo esc_url( $logo ); ?>" alt="" width="440" height="440" loading="lazy" decoding="async" /></span>
@@ -276,7 +279,7 @@ class TS_BNPL_Visual_Landing {
 	private static function section_eligibility( $section ) {
 		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-split__image', 'sizes' => '(max-width: 767px) 100vw, 50vw' ) );
 		?>
-		<section class="ts-bnpl-visual-eligibility ts-bnpl-visual-section ts-bnpl-visual-split" aria-labelledby="ts-bnpl-visual-eligibility-title">
+		<section class="ts-bnpl-visual-eligibility ts-bnpl-visual-section ts-bnpl-visual-split<?php echo '' === $visual ? ' ts-bnpl-visual-split--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-eligibility-title">
 			<div class="ts-bnpl-visual-split__content"><h2 id="ts-bnpl-visual-eligibility-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><span class="ts-bnpl-visual-badge"><i class="icon-check" aria-hidden="true"></i><?php esc_html_e( 'قابل خرید اعتباری', 'ts-bnpl' ); ?></span></div>
 			<?php if ( '' !== $visual ) : ?><div class="ts-bnpl-visual-split__media"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div><?php endif; ?>
 		</section>
@@ -342,7 +345,7 @@ class TS_BNPL_Visual_Landing {
 	private static function section_conditions( $section ) {
 		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-split__image', 'sizes' => '(max-width: 767px) 100vw, 50vw' ) );
 		?>
-		<section class="ts-bnpl-visual-conditions ts-bnpl-visual-section ts-bnpl-visual-split ts-bnpl-visual-split--reverse" aria-labelledby="ts-bnpl-visual-conditions-title">
+		<section class="ts-bnpl-visual-conditions ts-bnpl-visual-section ts-bnpl-visual-split ts-bnpl-visual-split--reverse<?php echo '' === $visual ? ' ts-bnpl-visual-split--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-conditions-title">
 			<?php if ( '' !== $visual ) : ?><div class="ts-bnpl-visual-split__media"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div><?php endif; ?>
 			<div class="ts-bnpl-visual-split__content"><h2 id="ts-bnpl-visual-conditions-title"><?php echo esc_html( $section['title'] ); ?></h2><p class="ts-bnpl-visual-lede"><?php echo esc_html( $section['lead'] ); ?></p><p><?php echo esc_html( $section['description'] ); ?></p></div>
 		</section>
@@ -370,7 +373,7 @@ class TS_BNPL_Visual_Landing {
 	private static function section_final_cta( $section ) {
 		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-final__image', 'sizes' => '(max-width: 767px) 100vw, 45vw' ) );
 		?>
-		<section class="ts-bnpl-visual-final ts-bnpl-visual-section" aria-labelledby="ts-bnpl-visual-final-title">
+		<section class="ts-bnpl-visual-final ts-bnpl-visual-section<?php echo '' === $visual ? ' ts-bnpl-visual-final--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-final-title">
 			<div class="ts-bnpl-visual-final__content"><h2 id="ts-bnpl-visual-final-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><?php self::button( $section['label'], $section['url'], false ); ?></div>
 			<?php if ( '' !== $visual ) : ?><div class="ts-bnpl-visual-final__media"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div><?php endif; ?>
 		</section>
@@ -399,11 +402,11 @@ class TS_BNPL_Visual_Landing {
 	private static function faqs() {
 		return array(
 			array( 'question' => 'آیا همه‌ی کالاهای سایت را می‌شود اعتباری خرید؟', 'answer' => 'خیر. فقط کالاهایی که در صفحه‌شان نشان خرید اعتباری دارند. این فهرست به مرور به‌روز می‌شود.' ),
-			array( 'question' => 'برای خرید اعتباری باید مسیر جداگانه‌ای بروم؟', 'answer' => 'نه. کالا را مثل همیشه به سبد خرید اضافه می‌کنید و فقط در مرحله‌ی پرداخت، یکی از روش‌های اعتباری را انتخاب می‌کنید.' ),
-			array( 'question' => 'اگر سبد خرید من چند کالا داشته باشد چه می‌شود؟', 'answer' => 'برای استفاده از پرداخت اعتباری لازم است همه‌ی کالاهای داخل سبد واجد شرایط باشند.' ),
+			array( 'question' => 'برای خرید اعتباری باید مسیر جداگانه‌ای بروم؟', 'answer' => 'نه. کالا را مثل همیشه به سبد خرید اضافه می‌کنید و فقط در مرحله‌ی پرداخت، به‌جای پرداخت نقدی یکی از روش‌های اعتباری را انتخاب می‌کنید.' ),
+			array( 'question' => 'اگر سبد خرید من چند کالا داشته باشد چه می‌شود؟', 'answer' => 'برای استفاده از پرداخت اعتباری لازم است همه‌ی کالاهای داخل سبد واجد شرایط باشند. اگر کالایی در سبد این امکان را نداشته باشد، روش‌های اعتباری در مرحله‌ی پرداخت نمایش داده نمی‌شوند.' ),
 			array( 'question' => 'شرایط و مبلغ نهایی را کجا می‌بینم؟', 'answer' => 'در مرحله‌ی پرداخت و پس از انتخاب روش اعتباری. تا پیش از تأیید نهایی، هیچ پرداختی انجام نمی‌شود.' ),
-			array( 'question' => 'ارسال و گارانتی کالا فرقی می‌کند؟', 'answer' => 'خیر. کالا، اصالت، گارانتی، بسته‌بندی و روند ارسال دقیقاً مثل خرید نقدی است.' ),
-			array( 'question' => 'اگر روش اعتباری در مرحله‌ی پرداخت نبود چه کنم؟', 'answer' => 'یعنی در آن لحظه برای سبد شما در دسترس نیست. می‌توانید سبد را بازبینی کنید یا خرید را نقدی ادامه دهید.' ),
+			array( 'question' => 'ارسال و گارانتی کالا فرقی می‌کند؟', 'answer' => 'خیر. کالا، اصالت، گارانتی، بسته‌بندی و روند ارسال دقیقاً مثل خرید نقدی است. تنها تفاوت، روش پرداخت است.' ),
+			array( 'question' => 'اگر روش اعتباری در مرحله‌ی پرداخت نبود چه کنم؟', 'answer' => 'یعنی در آن لحظه برای سبد شما در دسترس نیست. می‌توانید سبد را بازبینی کنید یا خرید را به‌صورت نقدی ادامه دهید.' ),
 		);
 	}
 

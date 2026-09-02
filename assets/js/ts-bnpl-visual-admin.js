@@ -98,17 +98,36 @@
 			return;
 		}
 
+		var kind = field.getAttribute( 'data-media-kind' ) || 'image';
+		var requiredMime = {
+			desktop_avif_id: 'image/avif',
+			mobile_avif_id: 'image/avif',
+			desktop_webp_id: 'image/webp',
+			mobile_webp_id: 'image/webp'
+		}[ kind ] || '';
+
 		var frame = wp.media( {
 			title: config.mediaTitle || 'Select media',
 			button: { text: config.mediaButton || 'Use media' },
-			library: { type: 'image' },
+			library: { type: requiredMime || 'image' },
 			multiple: false
 		} );
 		frame.on( 'select', function () {
 			var attachment = frame.state().get( 'selection' ).first().toJSON();
+			if ( requiredMime && attachment.mime !== requiredMime ) {
+				window.alert( config.invalidMedia || 'The selected file type is not valid for this field.' );
+				return;
+			}
 			field.querySelector( '[data-ts-bnpl-media-id]' ).value = String( attachment.id || 0 );
-			var preview = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
-			field.querySelector( '[data-ts-bnpl-media-preview]' ).innerHTML = preview ? '<img src="' + preview.replace( /"/g, '&quot;' ) + '" alt="" />' : '';
+			var previewUrl = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+			var preview = field.querySelector( '[data-ts-bnpl-media-preview]' );
+			preview.innerHTML = '';
+			if ( previewUrl ) {
+				var image = document.createElement( 'img' );
+				image.src = previewUrl;
+				image.alt = '';
+				preview.appendChild( image );
+			}
 		} );
 		frame.open();
 	} );

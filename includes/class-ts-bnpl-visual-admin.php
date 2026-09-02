@@ -81,6 +81,7 @@ class TS_BNPL_Visual_Admin {
 				'mediaTitle'  => __( 'انتخاب فایل رسانه', 'ts-bnpl' ),
 				'mediaButton' => __( 'استفاده از این فایل', 'ts-bnpl' ),
 				'removeRow'   => __( 'حذف این ردیف؟', 'ts-bnpl' ),
+				'invalidMedia' => __( 'نوع فایل با این جایگاه سازگار نیست. فایل AVIF یا WebP درست را انتخاب کنید.', 'ts-bnpl' ),
 			)
 		);
 	}
@@ -95,8 +96,9 @@ class TS_BNPL_Visual_Admin {
 			return;
 		}
 
-		$settings = TS_BNPL_Visual_Settings::get();
-		$choices  = TS_BNPL_Providers::choices();
+		$settings      = TS_BNPL_Visual_Settings::get();
+		$choices       = TS_BNPL_Providers::choices();
+		$invalid_media = self::invalid_media_count( get_option( TS_BNPL_Visual_Settings::OPTION, array() ) );
 		?>
 		<div class="wrap ts-bnpl-visual-admin" dir="rtl">
 			<h1><?php esc_html_e( 'لندینگ تصویری خرید اعتباری', 'ts-bnpl' ); ?></h1>
@@ -105,6 +107,11 @@ class TS_BNPL_Visual_Admin {
 			</p>
 
 			<?php self::render_notice(); ?>
+			<?php if ( $invalid_media > 0 ) : ?>
+				<div class="notice notice-warning inline"><p>
+					<?php echo esc_html( sprintf( __( '%d فایل رسانه‌ی نامعتبر یا حذف‌شده پیدا شد. جایگاه‌های خالی را دوباره انتخاب کنید.', 'ts-bnpl' ), $invalid_media ) ); ?>
+				</p></div>
+			<?php endif; ?>
 
 			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'بخش‌های لندینگ تصویری', 'ts-bnpl' ); ?>">
 				<?php
@@ -149,7 +156,7 @@ class TS_BNPL_Visual_Admin {
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public static function save_request( $request ) {
-		if ( ! current_user_can( self::CAPABILITY ) || ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
 			return new WP_Error( 'ts_bnpl_visual_forbidden', __( 'اجازه‌ی مدیریت این تنظیمات را ندارید.', 'ts-bnpl' ) );
 		}
 
@@ -161,8 +168,119 @@ class TS_BNPL_Visual_Admin {
 		}
 
 		$payload = isset( $request['ts_bnpl_visual'] ) ? wp_unslash( $request['ts_bnpl_visual'] ) : array();
+		$media   = self::validate_media_request( $payload );
+
+		if ( is_wp_error( $media ) ) {
+			return $media;
+		}
 
 		return TS_BNPL_Visual_Settings::save( $payload );
+	}
+
+	/**
+	 * مجوز و MIME رسانه‌های ارسالی را قبل از normalize بررسی می‌کند.
+	 *
+	 * @param mixed $payload داده‌ی فرم.
+	 *
+	 * @return true|WP_Error
+	 */
+	private static function validate_media_request( $payload ) {
+		$current = get_option( TS_BNPL_Visual_Settings::OPTION, array() );
+		$old     = self::media_references( $current );
+		$new     = self::media_references( $payload );
+		$old_sig = self::media_signature( $old );
+		$new_sig = self::media_signature( $new );
+
+		if ( $old_sig !== $new_sig && ! current_user_can( 'upload_files' ) ) {
+			return new WP_Error( 'ts_bnpl_visual_forbidden', __( 'برای تغییر فایل‌های رسانه اجازه‌ی بارگذاری لازم است.', 'ts-bnpl' ) );
+		}
+
+		$old_ids = array_values( array_unique( array_column( $old, 'id' ) ) );
+		foreach ( $new as $reference ) {
+			$attachment_id = $reference['id'];
+			if (
+				'attachment' !== get_post_type( $attachment_id ) ||
+				'trash' === get_post_status( $attachment_id ) ||
+				! in_array( get_post_mime_type( $attachment_id ), $reference['mimes'], true ) ||
+				! wp_get_attachment_url( $attachment_id )
+			) {
+				return new WP_Error( 'ts_bnpl_visual_invalid_media', __( 'یکی از فایل‌ها با نوع فیلد انتخابی سازگار نیست یا دیگر در دسترس نیست.', 'ts-bnpl' ) );
+			}
+
+			if ( ! in_array( $attachment_id, $old_ids, true ) && ! current_user_can( 'edit_post', $attachment_id ) ) {
+				return new WP_Error( 'ts_bnpl_visual_media_forbidden', __( 'اجازه‌ی استفاده از یکی از فایل‌های انتخابی را ندارید.', 'ts-bnpl' ) );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * فهرست رسانه‌های شناخته‌شده‌ی payload؛ کلیدهای دلخواه نادیده گرفته می‌شوند.
+	 *
+	 * @param mixed $value داده‌ی تو در تو.
+	 *
+	 * @return array<int,array{id:int,field:string,mimes:string[]}>
+	 */
+	private static function media_references( $value ) {
+		$allowed = array(
+			'desktop_avif_id' => array( 'image/avif' ),
+			'mobile_avif_id'  => array( 'image/avif' ),
+			'desktop_webp_id' => array( 'image/webp' ),
+			'mobile_webp_id'  => array( 'image/webp' ),
+			'logo_id'         => array( 'image/png', 'image/webp', 'image/jpeg' ),
+		);
+		$references = array();
+
+		if ( ! is_array( $value ) ) {
+			return $references;
+		}
+
+		foreach ( $value as $key => $item ) {
+			if ( isset( $allowed[ $key ] ) ) {
+				$attachment_id = absint( $item );
+				if ( $attachment_id > 0 ) {
+					$references[] = array(
+						'id'     => $attachment_id,
+						'field'  => $key,
+						'mimes'  => $allowed[ $key ],
+					);
+				}
+			} elseif ( is_array( $item ) ) {
+				$references = array_merge( $references, self::media_references( $item ) );
+			}
+		}
+
+		return $references;
+	}
+
+	/** @return string[] */
+	private static function media_signature( $references ) {
+		$signature = array();
+		foreach ( $references as $reference ) {
+			$signature[] = $reference['field'] . ':' . $reference['id'];
+		}
+		sort( $signature, SORT_STRING );
+
+		return $signature;
+	}
+
+	/** @return int */
+	private static function invalid_media_count( $settings ) {
+		$count = 0;
+		foreach ( self::media_references( $settings ) as $reference ) {
+			$attachment_id = $reference['id'];
+			if (
+				'attachment' !== get_post_type( $attachment_id ) ||
+				'trash' === get_post_status( $attachment_id ) ||
+				! in_array( get_post_mime_type( $attachment_id ), $reference['mimes'], true ) ||
+				! wp_get_attachment_url( $attachment_id )
+			) {
+				$count++;
+			}
+		}
+
+		return $count;
 	}
 
 	/**
@@ -194,7 +312,14 @@ class TS_BNPL_Visual_Admin {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'تنظیمات لندینگ تصویری ذخیره شد.', 'ts-bnpl' ) . '</p></div>';
 		}
 		if ( isset( $_GET['ts-bnpl-visual-error'] ) ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'تنظیمات ذخیره نشد. دسترسی، فایل‌ها و مقادیر فرم را بررسی کنید.', 'ts-bnpl' ) . '</p></div>';
+			$error_code = sanitize_key( wp_unslash( $_GET['ts-bnpl-visual-error'] ) );
+			$messages   = array(
+				'ts_bnpl_visual_invalid_media'   => __( 'تنظیمات ذخیره نشد: نوع یا وضعیت یکی از فایل‌های انتخابی معتبر نیست.', 'ts-bnpl' ),
+				'ts_bnpl_visual_media_forbidden' => __( 'تنظیمات ذخیره نشد: اجازه‌ی استفاده از یکی از فایل‌های انتخابی را ندارید.', 'ts-bnpl' ),
+				'ts_bnpl_visual_forbidden'       => __( 'تنظیمات ذخیره نشد: دسترسی لازم برای این تغییر را ندارید.', 'ts-bnpl' ),
+			);
+			$message    = isset( $messages[ $error_code ] ) ? $messages[ $error_code ] : __( 'تنظیمات ذخیره نشد. دسترسی، فایل‌ها و مقادیر فرم را بررسی کنید.', 'ts-bnpl' );
+			echo '<div class="notice notice-error"><p>' . esc_html( $message ) . '</p></div>';
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
@@ -308,6 +433,11 @@ class TS_BNPL_Visual_Admin {
 			</div>
 			<?php self::textarea_field( 'ts_bnpl_visual[providers][' . $index . '][description]', __( 'توضیح کوتاه', 'ts-bnpl' ), $row['description'] ); ?>
 			<?php self::render_media_field( 'ts_bnpl_visual[providers][' . $index . '][logo_id]', __( 'لوگو (PNG/WebP/JPEG)', 'ts-bnpl' ), $row['logo_id'], 'logo' ); ?>
+			<?php if ( $row['provider_id'] && ! isset( $choices[ $row['provider_id'] ] ) ) : ?>
+				<p class="notice notice-warning inline"><span><?php esc_html_e( 'این درگاه فعلاً ثبت نشده است؛ ردیف برای ویرایش آینده حفظ می‌شود ولی عمومی نیست.', 'ts-bnpl' ); ?></span></p>
+			<?php elseif ( $row['provider_id'] && ! empty( $choices[ $row['provider_id'] ]['status'] ) ) : ?>
+				<p class="notice notice-warning inline"><span><?php echo esc_html( $choices[ $row['provider_id'] ]['status'] ); ?></span></p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -368,7 +498,7 @@ class TS_BNPL_Visual_Admin {
 			<p class="description"><?php esc_html_e( 'AVIF بهینه و WebP fallback را جداگانه برای دسکتاپ و موبایل انتخاب کنید. اگر WebP معتبر نباشد تصویر عمومی نمایش داده نمی‌شود.', 'ts-bnpl' ); ?></p>
 			<div class="ts-bnpl-visual-admin__media-grid">
 				<?php foreach ( $fields as $key => $label ) : ?>
-					<?php self::render_media_field( $prefix . '[' . $key . ']', $label, $media[ $key ], false ); ?>
+					<?php self::render_media_field( $prefix . '[' . $key . ']', $label, $media[ $key ], $key ); ?>
 				<?php endforeach; ?>
 			</div>
 			<?php self::text_field( $prefix . '[alt]', __( 'متن جایگزین تصویر', 'ts-bnpl' ), $media['alt'] ); ?>
@@ -406,10 +536,11 @@ class TS_BNPL_Visual_Admin {
 
 	/** @return void */
 	private static function text_field( $name, $label, $value, $type = 'text' ) {
+		$is_url = 'url' === $type;
 		?>
 		<label class="ts-bnpl-visual-admin__field">
 			<span><?php echo esc_html( $label ); ?></span>
-			<input type="<?php echo esc_attr( $type ); ?>" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+			<input type="<?php echo esc_attr( $is_url ? 'text' : $type ); ?>"<?php if ( $is_url ) : ?> inputmode="url"<?php endif; ?> name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
 		</label>
 		<?php
 	}
