@@ -65,6 +65,10 @@ $schema_error = TS_BNPL_Visual_Settings::save( array( 'schema_version' => 999 ) 
 ts_test_assert_true( is_wp_error( $schema_error ), 'unsupported future schemas are rejected' );
 ts_test_assert_same( '/keep', $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ]['banners'][0]['url'], 'unsupported schema preserves the previous option' );
 
+$missing_schema_error = TS_BNPL_Visual_Settings::save( array( 'banners' => array() ) );
+ts_test_assert_true( is_wp_error( $missing_schema_error ), 'missing schema versions are rejected' );
+ts_test_assert_same( '/keep', $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ]['banners'][0]['url'], 'missing schema preserves the previous option' );
+
 $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = array(
 	'schema_version' => 1,
 	'banners'       => array(),

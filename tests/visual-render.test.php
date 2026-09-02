@@ -156,6 +156,10 @@ ts_test_assert_contains( 'ts-bnpl-visual-hero--text-only', $text_only_html, 'Her
 ts_test_assert_contains( 'ts-bnpl-visual-split--text-only', $text_only_html, 'split sections rebalance when optional visuals are absent' );
 ts_test_assert_contains( 'ts-bnpl-visual-final--text-only', $text_only_html, 'final CTA rebalances when its optional visual is absent' );
 
+$visual_css = file_get_contents( dirname( __DIR__ ) . '/assets/css/ts-bnpl-visual-landing.css' );
+ts_test_assert_contains( '.ts-bnpl-visual-hero.ts-bnpl-visual-hero--text-only', $visual_css, 'tablet Hero rules cannot override the text-only layout' );
+ts_test_assert_contains( 'font-variation-settings: normal !important;', $visual_css, 'Page heading variation overrides are neutralized for canonical components' );
+
 $linked_media = $media;
 $linked_media['alt'] = '';
 $text_only_settings['banners'] = array( array( 'media' => $linked_media, 'url' => '/linked-offer' ) );

@@ -133,6 +133,7 @@ class TS_BNPL_Visual_Admin {
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="<?php echo esc_attr( self::SAVE_ACTION ); ?>" />
+				<input type="hidden" name="ts_bnpl_visual[schema_version]" value="<?php echo esc_attr( TS_BNPL_Visual_Settings::SCHEMA_VERSION ); ?>" />
 				<?php wp_nonce_field( self::SAVE_ACTION ); ?>
 
 				<?php self::render_banners( $settings['banners'] ); ?>
@@ -195,7 +196,7 @@ class TS_BNPL_Visual_Admin {
 			return new WP_Error( 'ts_bnpl_visual_forbidden', __( 'برای تغییر فایل‌های رسانه اجازه‌ی بارگذاری لازم است.', 'ts-bnpl' ) );
 		}
 
-		$old_ids = array_values( array_unique( array_column( $old, 'id' ) ) );
+		$old_assignments = self::media_signature( $old );
 		foreach ( $new as $reference ) {
 			$attachment_id = $reference['id'];
 			if (
@@ -207,7 +208,8 @@ class TS_BNPL_Visual_Admin {
 				return new WP_Error( 'ts_bnpl_visual_invalid_media', __( 'یکی از فایل‌ها با نوع فیلد انتخابی سازگار نیست یا دیگر در دسترس نیست.', 'ts-bnpl' ) );
 			}
 
-			if ( ! in_array( $attachment_id, $old_ids, true ) && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			$assignment = $reference['slot'] . ':' . $attachment_id;
+			if ( ! in_array( $assignment, $old_assignments, true ) && ! current_user_can( 'edit_post', $attachment_id ) ) {
 				return new WP_Error( 'ts_bnpl_visual_media_forbidden', __( 'اجازه‌ی استفاده از یکی از فایل‌های انتخابی را ندارید.', 'ts-bnpl' ) );
 			}
 		}
@@ -218,11 +220,12 @@ class TS_BNPL_Visual_Admin {
 	/**
 	 * فهرست رسانه‌های شناخته‌شده‌ی payload؛ کلیدهای دلخواه نادیده گرفته می‌شوند.
 	 *
-	 * @param mixed $value داده‌ی تو در تو.
+	 * @param mixed  $value داده‌ی تو در تو.
+	 * @param string $path  مسیر معنایی فعلی؛ اندیس بنر برای reorder نادیده گرفته می‌شود.
 	 *
-	 * @return array<int,array{id:int,field:string,mimes:string[]}>
+	 * @return array<int,array{id:int,field:string,slot:string,mimes:string[]}>
 	 */
-	private static function media_references( $value ) {
+	private static function media_references( $value, $path = '' ) {
 		$allowed = array(
 			'desktop_avif_id' => array( 'image/avif' ),
 			'mobile_avif_id'  => array( 'image/avif' ),
@@ -243,11 +246,21 @@ class TS_BNPL_Visual_Admin {
 					$references[] = array(
 						'id'     => $attachment_id,
 						'field'  => $key,
+						'slot'   => ltrim( $path . '.' . $key, '.' ),
 						'mimes'  => $allowed[ $key ],
 					);
 				}
 			} elseif ( is_array( $item ) ) {
-				$references = array_merge( $references, self::media_references( $item ) );
+				if ( is_int( $key ) || ctype_digit( (string) $key ) ) {
+					$next_path = $path;
+					if ( 'providers' === $path ) {
+						$provider_id = isset( $item['provider_id'] ) ? sanitize_key( $item['provider_id'] ) : 'row';
+						$next_path   = 'providers.' . ( '' !== $provider_id ? $provider_id : 'row' );
+					}
+				} else {
+					$next_path = ltrim( $path . '.' . $key, '.' );
+				}
+				$references = array_merge( $references, self::media_references( $item, $next_path ) );
 			}
 		}
 
@@ -258,7 +271,7 @@ class TS_BNPL_Visual_Admin {
 	private static function media_signature( $references ) {
 		$signature = array();
 		foreach ( $references as $reference ) {
-			$signature[] = $reference['field'] . ':' . $reference['id'];
+			$signature[] = $reference['slot'] . ':' . $reference['id'];
 		}
 		sort( $signature, SORT_STRING );
 

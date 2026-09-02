@@ -131,7 +131,7 @@ class TS_BNPL_Visual_Settings {
 		if ( ! is_array( $raw ) ) {
 			return new WP_Error( 'ts_bnpl_visual_invalid_payload', __( 'ساختار تنظیمات لندینگ تصویری معتبر نیست.', 'ts-bnpl' ) );
 		}
-		if ( isset( $raw['schema_version'] ) && self::SCHEMA_VERSION !== (int) $raw['schema_version'] ) {
+		if ( ! isset( $raw['schema_version'] ) || self::SCHEMA_VERSION !== (int) $raw['schema_version'] ) {
 			return new WP_Error( 'ts_bnpl_visual_unsupported_schema', __( 'نسخه‌ی ساختار تنظیمات لندینگ تصویری پشتیبانی نمی‌شود.', 'ts-bnpl' ) );
 		}
 

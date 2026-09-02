@@ -56,6 +56,7 @@ foreach ( array( 'Top Banners', 'Hero', 'Providers', 'Eligibility', 'Conditions 
 	ts_test_assert_contains( $label, $html, 'manager renders the ' . $label . ' tab' );
 }
 ts_test_assert_contains( 'ts_bnpl_visual[banners]', $html, 'banner fields use the isolated option payload' );
+ts_test_assert_contains( 'name="ts_bnpl_visual[schema_version]" value="1"', $html, 'admin form submits the exact settings schema' );
 ts_test_assert_contains( 'desktop_avif_id', $html, 'responsive media includes Desktop AVIF' );
 ts_test_assert_contains( 'desktop_webp_id', $html, 'responsive media includes Desktop WebP' );
 ts_test_assert_contains( 'mobile_avif_id', $html, 'responsive media includes Mobile AVIF' );
@@ -104,7 +105,7 @@ $GLOBALS['ts_bnpl_test_nonce_valid'] = true;
 $saved = TS_BNPL_Visual_Admin::save_request(
 	array(
 		'_wpnonce'      => 'valid',
-		'ts_bnpl_visual' => array( 'banners' => array(), 'providers' => array() ),
+		'ts_bnpl_visual' => array( 'schema_version' => 1, 'banners' => array(), 'providers' => array() ),
 	)
 );
 ts_test_assert_false( is_wp_error( $saved ), 'valid admin payload saves' );
@@ -114,13 +115,14 @@ $GLOBALS['ts_bnpl_test_capabilities']['upload_files'] = false;
 $text_only_save = TS_BNPL_Visual_Admin::save_request(
 	array(
 		'_wpnonce'       => 'valid',
-		'ts_bnpl_visual' => array( 'banners' => array(), 'providers' => array(), 'hero' => array( 'title' => 'متن تازه' ) ),
+		'ts_bnpl_visual' => array( 'schema_version' => 1, 'banners' => array(), 'providers' => array(), 'hero' => array( 'title' => 'متن تازه' ) ),
 	)
 );
 ts_test_assert_false( is_wp_error( $text_only_save ), 'text-only changes do not require upload_files' );
 
 $GLOBALS['ts_bnpl_test_attachments'][91] = array( 'mime' => 'image/avif', 'url' => 'https://example.test/new.avif', 'width' => 1000, 'height' => 1000 );
 $media_payload = array(
+	'schema_version' => 1,
 	'banners' => array(),
 	'providers' => array(),
 	'hero' => array( 'media' => array( 'desktop_avif_id' => 91 ) ),
@@ -141,5 +143,54 @@ ts_test_assert_true( is_wp_error( $mime_denied ), 'a non-AVIF attachment in an A
 if ( is_wp_error( $mime_denied ) ) {
 	ts_test_assert_same( 'ts_bnpl_visual_invalid_media', $mime_denied->get_error_code(), 'invalid media has an actionable stable error code' );
 }
+
+$GLOBALS['ts_bnpl_test_attachments'][93] = array( 'mime' => 'image/avif', 'url' => 'https://example.test/hero.avif', 'width' => 1000, 'height' => 1000 );
+$GLOBALS['ts_bnpl_test_attachments'][94] = array( 'mime' => 'image/avif', 'url' => 'https://example.test/conditions.avif', 'width' => 1000, 'height' => 1000 );
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = array(
+	'schema_version' => 1,
+	'banners'        => array(),
+	'providers'      => array(),
+	'hero'           => array( 'media' => array( 'desktop_avif_id' => 93 ) ),
+	'conditions'     => array( 'media' => array( 'desktop_avif_id' => 94 ) ),
+);
+$swapped_sections = array(
+	'schema_version' => 1,
+	'banners'        => array(),
+	'providers'      => array(),
+	'hero'           => array( 'media' => array( 'desktop_avif_id' => 94 ) ),
+	'conditions'     => array( 'media' => array( 'desktop_avif_id' => 93 ) ),
+);
+$GLOBALS['ts_bnpl_test_capabilities']['upload_files'] = false;
+$slot_upload_denied = TS_BNPL_Visual_Admin::save_request( array( '_wpnonce' => 'valid', 'ts_bnpl_visual' => $swapped_sections ) );
+ts_test_assert_true( is_wp_error( $slot_upload_denied ), 'moving known media between semantic sections still requires upload_files' );
+
+$GLOBALS['ts_bnpl_test_capabilities']['upload_files'] = true;
+$GLOBALS['ts_bnpl_test_capabilities']['edit_post'] = false;
+$slot_edit_denied = TS_BNPL_Visual_Admin::save_request( array( '_wpnonce' => 'valid', 'ts_bnpl_visual' => $swapped_sections ) );
+ts_test_assert_true( is_wp_error( $slot_edit_denied ), 'moving known media into a new semantic slot requires edit permission' );
+
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = array(
+	'schema_version' => 1,
+	'banners'        => array(
+		array( 'media' => array( 'desktop_avif_id' => 93 ) ),
+		array( 'media' => array( 'desktop_avif_id' => 94 ) ),
+	),
+	'providers'      => array(),
+);
+$GLOBALS['ts_bnpl_test_capabilities']['upload_files'] = false;
+$banner_reorder = TS_BNPL_Visual_Admin::save_request(
+	array(
+		'_wpnonce'       => 'valid',
+		'ts_bnpl_visual' => array(
+			'schema_version' => 1,
+			'banners'        => array(
+				array( 'media' => array( 'desktop_avif_id' => 94 ) ),
+				array( 'media' => array( 'desktop_avif_id' => 93 ) ),
+			),
+			'providers'      => array(),
+		),
+	)
+);
+ts_test_assert_false( is_wp_error( $banner_reorder ), 'reordering otherwise unchanged banner rows does not require upload_files' );
 
 ts_test_finish();

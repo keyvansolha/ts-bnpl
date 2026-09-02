@@ -561,6 +561,11 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carouse
 	line-height: normal !important;
 }
 
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carousel :is(.primary-title, .sub-title),
+body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-faq__items .ts-faq__heading {
+	font-variation-settings: normal !important;
+}
+
 .ts-bnpl-visual-empty {
 	margin: 0 !important;
 	padding: 24px;
@@ -642,7 +647,7 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 }
 
 /* Optional artwork must never leave an empty desktop column. */
-.ts-bnpl-visual-hero--text-only,
+.ts-bnpl-visual-hero.ts-bnpl-visual-hero--text-only,
 .ts-bnpl-visual-split--text-only,
 .ts-bnpl-visual-final--text-only {
 	grid-template-columns: minmax(0, 1fr);
