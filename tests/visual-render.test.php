@@ -158,7 +158,7 @@ ts_test_assert_contains( 'ts-bnpl-visual-final--text-only', $text_only_html, 'fi
 
 $visual_css = file_get_contents( dirname( __DIR__ ) . '/assets/css/ts-bnpl-visual-landing.css' );
 ts_test_assert_contains( '.ts-bnpl-visual-hero.ts-bnpl-visual-hero--text-only', $visual_css, 'tablet Hero rules cannot override the text-only layout' );
-ts_test_assert_contains( 'font-variation-settings: normal !important;', $visual_css, 'Page heading variation overrides are neutralized for canonical components' );
+ts_test_assert_contains( 'font-variation-settings: unset !important;', $visual_css, 'Page heading variation overrides return canonical components to the inherited theme weight' );
 
 $linked_media = $media;
 $linked_media['alt'] = '';

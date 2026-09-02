@@ -563,7 +563,7 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carouse
 
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-products__carousel :is(.primary-title, .sub-title),
 body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-faq__items .ts-faq__heading {
-	font-variation-settings: normal !important;
+	font-variation-settings: unset !important;
 }
 
 .ts-bnpl-visual-empty {
