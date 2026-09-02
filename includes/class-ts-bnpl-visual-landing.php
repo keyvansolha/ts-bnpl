@@ -99,12 +99,6 @@ class TS_BNPL_Visual_Landing {
 			return $content;
 		}
 
-		static $done = false;
-		if ( $done ) {
-			return '';
-		}
-		$done = true;
-
 		return self::landing_html();
 	}
 

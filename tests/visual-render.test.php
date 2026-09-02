@@ -105,6 +105,8 @@ ts_test_assert_true( in_array( 'ts-bnpl-visual-landing-page', $classes, true ), 
 
 $html = TS_BNPL_Visual_Landing::render( 'editor content' );
 ts_test_assert_false( false !== strpos( $html, 'editor content' ), 'Visual mode replaces editor content so banner comes first' );
+$second_render = TS_BNPL_Visual_Landing::render( 'editor content again' );
+ts_test_assert_contains( 'ts-bnpl-visual-landing', $second_render, 'content filtering remains re-entrant for SEO and preview consumers' );
 
 $ordered = array(
 	'<section class="ts-bnpl-visual-banner',
