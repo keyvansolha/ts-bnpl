@@ -22,6 +22,15 @@ $GLOBALS['ts_bnpl_test_failures']      = array();
 $GLOBALS['ts_bnpl_test_attachments']   = array();
 $GLOBALS['ts_bnpl_test_wc']            = null;
 $GLOBALS['ts_bnpl_test_mode']          = false;
+$GLOBALS['ts_bnpl_test_hooks']         = array();
+$GLOBALS['ts_bnpl_test_submenus']      = array();
+$GLOBALS['ts_bnpl_test_styles']        = array();
+$GLOBALS['ts_bnpl_test_scripts']       = array();
+$GLOBALS['ts_bnpl_test_localized']     = array();
+$GLOBALS['ts_bnpl_test_media_enqueued']= false;
+$GLOBALS['ts_bnpl_test_capabilities']  = array( 'manage_woocommerce' => true, 'upload_files' => true );
+$GLOBALS['ts_bnpl_test_nonce_valid']   = true;
+$GLOBALS['ts_bnpl_test_redirect']      = '';
 
 function ts_test_reset() {
 	$GLOBALS['ts_bnpl_test_options']       = array();
@@ -34,6 +43,15 @@ function ts_test_reset() {
 	$GLOBALS['ts_bnpl_test_attachments']   = array();
 	$GLOBALS['ts_bnpl_test_wc']            = null;
 	$GLOBALS['ts_bnpl_test_mode']          = false;
+	$GLOBALS['ts_bnpl_test_hooks']         = array();
+	$GLOBALS['ts_bnpl_test_submenus']      = array();
+	$GLOBALS['ts_bnpl_test_styles']        = array();
+	$GLOBALS['ts_bnpl_test_scripts']       = array();
+	$GLOBALS['ts_bnpl_test_localized']     = array();
+	$GLOBALS['ts_bnpl_test_media_enqueued']= false;
+	$GLOBALS['ts_bnpl_test_capabilities']  = array( 'manage_woocommerce' => true, 'upload_files' => true );
+	$GLOBALS['ts_bnpl_test_nonce_valid']   = true;
+	$GLOBALS['ts_bnpl_test_redirect']      = '';
 }
 
 function ts_test_assert_true( $actual, $message ) {
@@ -99,6 +117,14 @@ function apply_filters( $hook, $value, ...$args ) {
 		: $value;
 }
 
+function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) {
+	$GLOBALS['ts_bnpl_test_hooks'][ $hook ][] = array( $callback, $priority, $accepted_args );
+}
+
+function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) {
+	$GLOBALS['ts_bnpl_test_hooks'][ $hook ][] = array( $callback, $priority, $accepted_args );
+}
+
 function absint( $value ) {
 	return abs( (int) $value );
 }
@@ -126,6 +152,14 @@ function esc_url_raw( $value ) {
 
 function wp_parse_args( $args, $defaults = array() ) {
 	return array_merge( $defaults, is_array( $args ) ? $args : array() );
+}
+
+function wp_unslash( $value ) {
+	return $value;
+}
+
+function wp_json_encode( $value, $flags = 0 ) {
+	return json_encode( $value, $flags );
 }
 
 function esc_attr( $value ) {
@@ -191,6 +225,10 @@ function wp_get_attachment_image_src( $post_id, $size = 'full' ) {
 	return array( $item['url'], $item['width'], $item['height'], false );
 }
 
+function wp_get_attachment_image_url( $post_id, $size = 'thumbnail' ) {
+	return wp_get_attachment_url( $post_id );
+}
+
 function get_permalink( $post_id ) {
 	return 'https://example.test/page/' . absint( $post_id ) . '/';
 }
@@ -213,6 +251,77 @@ function WC() {
 
 function get_queried_object_id() {
 	return 99;
+}
+
+function current_user_can( $capability ) {
+	return ! empty( $GLOBALS['ts_bnpl_test_capabilities'][ $capability ] );
+}
+
+function wp_verify_nonce( $nonce, $action ) {
+	return $GLOBALS['ts_bnpl_test_nonce_valid'] && 'valid' === $nonce;
+}
+
+function wp_create_nonce( $action ) {
+	return 'valid';
+}
+
+function add_submenu_page( $parent, $page_title, $menu_title, $capability, $slug, $callback ) {
+	$GLOBALS['ts_bnpl_test_submenus'][] = compact( 'parent', 'page_title', 'menu_title', 'capability', 'slug', 'callback' );
+	return 'product_page_' . $slug;
+}
+
+function wp_enqueue_media() {
+	$GLOBALS['ts_bnpl_test_media_enqueued'] = true;
+}
+
+function wp_enqueue_style( $handle, $src = '', $deps = array(), $version = false, $media = 'all' ) {
+	$GLOBALS['ts_bnpl_test_styles'][ $handle ] = compact( 'src', 'deps', 'version', 'media' );
+}
+
+function wp_enqueue_script( $handle, $src = '', $deps = array(), $version = false, $in_footer = false ) {
+	$GLOBALS['ts_bnpl_test_scripts'][ $handle ] = compact( 'src', 'deps', 'version', 'in_footer' );
+}
+
+function wp_localize_script( $handle, $name, $data ) {
+	$GLOBALS['ts_bnpl_test_localized'][ $handle ] = compact( 'name', 'data' );
+}
+
+function admin_url( $path = '' ) {
+	return 'https://example.test/wp-admin/' . ltrim( $path, '/' );
+}
+
+function add_query_arg( $args, $url = '' ) {
+	return rtrim( $url, '?' ) . '?' . http_build_query( $args );
+}
+
+function wp_safe_redirect( $url ) {
+	$GLOBALS['ts_bnpl_test_redirect'] = $url;
+	return true;
+}
+
+function wp_nonce_field( $action, $name = '_wpnonce' ) {
+	echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="valid" />';
+}
+
+function checked( $checked, $current = true, $echo = true ) {
+	$value = (string) $checked === (string) $current ? ' checked="checked"' : '';
+	if ( $echo ) {
+		echo $value;
+	}
+	return $value;
+}
+
+function selected( $selected, $current = true, $echo = true ) {
+	$value = (string) $selected === (string) $current ? ' selected="selected"' : '';
+	if ( $echo ) {
+		echo $value;
+	}
+	return $value;
+}
+
+function submit_button( $text = 'Save', $type = 'primary', $name = 'submit', $wrap = true ) {
+	$button = '<button type="submit" name="' . esc_attr( $name ) . '" class="button ' . esc_attr( $type ) . '">' . esc_html( $text ) . '</button>';
+	echo $wrap ? '<p class="submit">' . $button . '</p>' : $button;
 }
 
 function get_woocommerce_currency_symbol() {

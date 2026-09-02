@@ -1,0 +1,99 @@
+.ts-bnpl-visual-admin {
+	max-width: 1180px;
+}
+
+.ts-bnpl-visual-admin .nav-tab-wrapper {
+	direction: rtl;
+	margin-block: 24px 0;
+}
+
+.ts-bnpl-visual-admin .nav-tab {
+	cursor: pointer;
+}
+
+.ts-bnpl-visual-admin__panel.card {
+	box-sizing: border-box;
+	max-width: none;
+	margin-block: 0 20px;
+	padding: 24px;
+}
+
+.ts-bnpl-visual-admin__repeat-row,
+.ts-bnpl-visual-admin__media-group {
+	margin-block: 16px;
+	padding: 18px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.ts-bnpl-visual-admin__row-head,
+.ts-bnpl-visual-admin__row-controls,
+.ts-bnpl-visual-admin__grid,
+.ts-bnpl-visual-admin__media-grid {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.ts-bnpl-visual-admin__row-head {
+	justify-content: space-between;
+	cursor: move;
+}
+
+.ts-bnpl-visual-admin__row-head h3 {
+	margin: 0;
+}
+
+.ts-bnpl-visual-admin__grid,
+.ts-bnpl-visual-admin__media-grid {
+	align-items: stretch;
+	flex-wrap: wrap;
+}
+
+.ts-bnpl-visual-admin__field,
+.ts-bnpl-visual-admin__media {
+	display: grid;
+	gap: 8px;
+	margin-block: 14px;
+}
+
+.ts-bnpl-visual-admin__grid > .ts-bnpl-visual-admin__field,
+.ts-bnpl-visual-admin__media-grid > .ts-bnpl-visual-admin__media {
+	flex: 1 1 230px;
+}
+
+.ts-bnpl-visual-admin__field input,
+.ts-bnpl-visual-admin__field select,
+.ts-bnpl-visual-admin__field textarea {
+	width: 100%;
+	max-width: none;
+}
+
+.ts-bnpl-visual-admin__check {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-block: 14px;
+}
+
+.ts-bnpl-visual-admin__preview {
+	display: grid;
+	place-items: center;
+	min-height: 96px;
+	border: 1px dashed #a7aaad;
+	background: #f6f7f7;
+}
+
+.ts-bnpl-visual-admin__preview img {
+	display: block;
+	max-width: 100%;
+	max-height: 120px;
+}
+
+@media (max-width: 782px) {
+	.ts-bnpl-visual-admin__row-head {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}
