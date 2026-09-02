@@ -27,6 +27,7 @@ composer.lock
 dist/
 build/
 .cache/
+.worktrees/
 
 # Logs
 *.log
