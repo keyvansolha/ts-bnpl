@@ -8,6 +8,10 @@ $GLOBALS['ts_bnpl_test_post_statuses']  = array( 42 => 'publish' );
 $GLOBALS['ts_bnpl_test_is_product']     = true;
 $GLOBALS['ts_bnpl_test_product']        = new WC_Product();
 
+ts_test_assert_true( is_callable( array( 'TS_BNPL_Landing', 'enqueue_theme_card_assets' ) ), 'theme card asset bridge is reusable by both landing modes' );
+ts_test_assert_true( is_callable( array( 'TS_BNPL_Landing', 'card_template' ) ), 'canonical card resolver is reusable by both landing modes' );
+ts_test_assert_true( is_callable( array( 'TS_BNPL_Landing', 'hero_logo_url' ) ), 'rotating SVG resolver is reusable by both landing modes' );
+
 foreach ( array( 'accordion', 'modal', 'landing' ) as $mode ) {
 	TS_BNPL_Display::update_settings( $mode, 'Teaser', 42 );
 	if ( method_exists( 'TS_BNPL_Landing', 'should_render_legacy' ) ) {

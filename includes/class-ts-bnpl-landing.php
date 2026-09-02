@@ -176,7 +176,7 @@ class TS_BNPL_Landing {
 	 * @return string[] هندل شیت‌هایی که این صفحه از قالب می‌گیرد، تا شیت
 	 *                  لندینگ بتواند به آن‌ها وابسته شود و بعدشان چاپ شود.
 	 */
-	private static function enqueue_theme_card_assets() {
+	public static function enqueue_theme_card_assets() {
 		if ( ! defined( 'THEME_ASSETS' ) || ! defined( 'THEME_LIB' ) ) {
 			return array();
 		}
@@ -800,7 +800,7 @@ class TS_BNPL_Landing {
 	 *
 	 * @return string مسیر فایل یا رشته‌ی خالی.
 	 */
-	private static function card_template() {
+	public static function card_template() {
 		if ( ! defined( 'THEME_COMPONENTS' ) ) {
 			return '';
 		}
@@ -931,7 +931,7 @@ class TS_BNPL_Landing {
 	 *
 	 * @return string
 	 */
-	private static function hero_logo_url() {
+	public static function hero_logo_url() {
 		$relative = 'images/logo.svg';
 
 		if ( file_exists( get_template_directory() . '/' . $relative ) ) {
