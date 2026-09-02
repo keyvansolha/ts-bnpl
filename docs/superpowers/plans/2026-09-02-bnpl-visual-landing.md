@@ -31,7 +31,7 @@
 **Files:**
 - Create: `tests/bootstrap.php`
 - Create: `tests/mode-routing.test.php`
-- Create: `tests/source-contracts.test.mjs`
+- Create: `tests/legacy-landing-routing.test.php`
 - Modify: `includes/class-ts-bnpl-display.php`
 - Modify: `includes/class-ts-bnpl-report.php`
 - Modify: `includes/class-ts-bnpl-landing.php`
@@ -89,15 +89,15 @@ Add the constant and helper, append to `modes()`, and use the helper for missing
 
 Guard legacy body class, CSS enqueue, and content injection with `should_render_legacy()`, defined as selected landing Page and effective mode not equal to `visual_landing`. Do not change legacy section methods or CSS.
 
-- [ ] **Step 5: Add source regression contracts**
+- [ ] **Step 5: Add executable legacy-routing regressions**
 
-Use Node `node:test` to assert the old mode constants remain unchanged, the new radio exists, `ts-bnpl-landing.css` is still the legacy handle, old section headings remain present, and Visual mode is included in modal suppression.
+Load the real Landing and Display classes through WordPress stubs. Exercise selected-page requests under all four modes and assert the legacy renderer/body class/assets remain active for the three existing modes but are suppressed for Visual mode. Render a teaser and footer under each landing key to prove both emit navigation links and neither emits the modal.
 
 - [ ] **Step 6: Run focused checks**
 
 Run: `php tests/mode-routing.test.php`
 
-Run: `node --test tests/source-contracts.test.mjs`
+Run: `php tests/legacy-landing-routing.test.php`
 
 Run: `php -l includes/class-ts-bnpl-display.php && php -l includes/class-ts-bnpl-report.php && php -l includes/class-ts-bnpl-landing.php`
 
@@ -208,7 +208,7 @@ git commit -m "feat: add visual landing settings and media model"
 - Create: `includes/class-ts-bnpl-visual-admin.php`
 - Create: `assets/js/ts-bnpl-visual-admin.js`
 - Create: `assets/css/ts-bnpl-visual-admin.css`
-- Create: `tests/visual-admin-contract.test.mjs`
+- Create: `tests/visual-admin.test.php`
 - Modify: `ts-bnpl.php`
 
 **Interfaces:**
@@ -218,13 +218,13 @@ git commit -m "feat: add visual landing settings and media model"
 - Produces: admin-post action `ts_bnpl_save_visual_landing`
 - Produces: repeaters using `data-ts-bnpl-banner-list` and `data-ts-bnpl-provider-list`
 
-- [ ] **Step 1: Write failing admin source contracts**
+- [ ] **Step 1: Write failing admin behavior tests**
 
-Assert submenu registration under `edit.php?post_type=product`, `manage_woocommerce`, nonce/capability checks, page-scoped `wp_enqueue_media()`, `jquery-ui-sortable`, hidden attachment-ID fields, all six tabs/cards, add/remove/up/down controls, and admin-post redirect notices.
+Load the real admin class through WordPress stubs. Capture the submenu arguments, registered hooks, enqueued dependencies, and rendered form. Assert registration under `edit.php?post_type=product`, `manage_woocommerce`, nonce/capability rejection, page-scoped `wp_enqueue_media()`, `jquery-ui-sortable`, hidden attachment-ID fields, all six tabs/cards, add/remove/up/down controls, and successful/error redirects.
 
 - [ ] **Step 2: Run the test to verify failure**
 
-Run: `node --test tests/visual-admin-contract.test.mjs`
+Run: `php tests/visual-admin.test.php`
 
 Expected: FAIL because admin class/assets do not exist.
 
@@ -246,7 +246,7 @@ Use `.nav-tab-wrapper`, `.card`, core buttons, clear RTL-safe grids, image previ
 
 Initialize `TS_BNPL_Visual_Admin` from `ts-bnpl.php` after dependencies.
 
-Run: `node --test tests/visual-admin-contract.test.mjs`
+Run: `php tests/visual-admin.test.php`
 
 Run: `node --check assets/js/ts-bnpl-visual-admin.js`
 
@@ -257,7 +257,7 @@ Expected: all PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add ts-bnpl.php includes/class-ts-bnpl-visual-admin.php assets tests/visual-admin-contract.test.mjs
+git add ts-bnpl.php includes/class-ts-bnpl-visual-admin.php assets tests/visual-admin.test.php
 git commit -m "feat: add visual landing admin manager"
 ```
 
@@ -267,7 +267,7 @@ git commit -m "feat: add visual landing admin manager"
 
 **Files:**
 - Create: `includes/class-ts-bnpl-visual-landing.php`
-- Create: `tests/visual-render-contract.test.mjs`
+- Create: `tests/visual-render.test.php`
 - Modify: `ts-bnpl.php`
 
 **Interfaces:**
@@ -280,13 +280,13 @@ git commit -m "feat: add visual landing admin manager"
 - Produces: `TS_BNPL_Visual_Landing::landing_html(): string`
 - Produces: body class `ts-bnpl-visual-landing-page`
 
-- [ ] **Step 1: Write failing renderer contracts**
+- [ ] **Step 1: Write failing renderer behavior tests**
 
-Assert active-mode/page routing, editor-content replacement, Visual-only body class/assets, breadcrumb/title hiding selectors, required section order/IDs, rotating theme SVG, four current steps, current FAQ copy, current conditions copy, provider resolution, canonical eligible product query, `simple-card.php`, theme product-carousel asset handles, and no marketing sliders outside the top banner.
+Load the real renderer with deterministic settings, attachment, provider, and product fixtures. Exercise inactive and active requests. Assert editor content is unchanged when inactive and replaced when active; body class/assets are Visual-only; rendered DOM has the required ordered sections/IDs, rotating theme SVG, four current steps, current FAQ and conditions copy, provider entries, canonical eligible product cards, and exactly one marketing slider wrapper at most.
 
 - [ ] **Step 2: Run the test to verify failure**
 
-Run: `node --test tests/visual-render-contract.test.mjs`
+Run: `php tests/visual-render.test.php`
 
 Expected: FAIL because the renderer does not exist.
 
@@ -312,7 +312,7 @@ Prefer theme `wbs_render_faq_card()`/FAQ assets when available; provide semantic
 
 Initialize the class after the legacy Landing so public helper APIs are available.
 
-Run: `node --test tests/visual-render-contract.test.mjs`
+Run: `php tests/visual-render.test.php`
 
 Run: `php -l includes/class-ts-bnpl-visual-landing.php`
 
@@ -321,7 +321,7 @@ Expected: all PASS.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add ts-bnpl.php includes/class-ts-bnpl-visual-landing.php tests/visual-render-contract.test.mjs
+git add ts-bnpl.php includes/class-ts-bnpl-visual-landing.php tests/visual-render.test.php
 git commit -m "feat: render isolated BNPL visual landing"
 ```
 
@@ -332,7 +332,7 @@ git commit -m "feat: render isolated BNPL visual landing"
 **Files:**
 - Create: `assets/css/ts-bnpl-visual-landing.css`
 - Create: `assets/js/ts-bnpl-visual-landing.js`
-- Create: `tests/visual-assets.test.mjs`
+- Create: `tests/visual-banner.test.mjs`
 - Modify: `includes/class-ts-bnpl-visual-landing.php`
 
 **Interfaces:**
@@ -340,15 +340,13 @@ git commit -m "feat: render isolated BNPL visual landing"
 - Consumes: scoped `.ts-bnpl-visual-banner__next`, `__prev`, and `__pagination`
 - Produces: Visual-only responsive layouts and Swiper initialization
 
-- [ ] **Step 1: Write failing asset contracts**
+- [ ] **Step 1: Write failing banner behavior tests**
 
-Assert CSS contains only Visual-scoped component selectors, 1326/400 and 4/3 banner aspect ratios, logical properties, provider 1/2/3+ layouts, desktop-horizontal/mobile-vertical steps, split-section stacking, FAQ columns, mobile product overflow, focus-visible, reduced motion, and no global `body.home`/legacy Landing selectors.
-
-Assert JS initializes only sliders with at least two slides, scopes controls, uses rewind/autoplay/touch/RTL-compatible Swiper, stops autoplay for reduced motion, and pauses/resumes on hover/focus/visibility.
+Execute the real initializer in Node with small DOM, media-query, and Swiper doubles. Assert it ignores one-slide banners, initializes each multi-slide banner once with controls scoped to that banner, enables rewind/keyboard/touch options, disables autoplay for reduced motion, and calls autoplay stop/start on hover, focus, and document visibility changes. CSS receives manual responsive/RTL/focus review during Task 7 because the available environment has no browser engine.
 
 - [ ] **Step 2: Run the test to verify failure**
 
-Run: `node --test tests/visual-assets.test.mjs`
+Run: `node --test tests/visual-banner.test.mjs`
 
 Expected: FAIL because CSS/JS do not exist.
 
@@ -366,7 +364,7 @@ Initialize each Visual banner independently only when `data-slide-count >= 2`. U
 
 Enqueue Visual CSS only when active. Enqueue JS only when at least two valid banners exist, after the complete theme Swiper bundle.
 
-Run: `node --test tests/visual-assets.test.mjs`
+Run: `node --test tests/visual-banner.test.mjs`
 
 Run: `node --check assets/js/ts-bnpl-visual-landing.js`
 
@@ -377,7 +375,7 @@ Expected: all PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add assets includes/class-ts-bnpl-visual-landing.php tests/visual-assets.test.mjs
+git add assets includes/class-ts-bnpl-visual-landing.php tests/visual-banner.test.mjs
 git commit -m "feat: style accessible RTL visual landing"
 ```
 
@@ -390,24 +388,13 @@ git commit -m "feat: style accessible RTL visual landing"
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
 - Modify: `ts-bnpl.php`
-- Create: `tests/documentation-contract.test.mjs`
 
 **Interfaces:**
 - Documents: admin paths/field names defined in Tasks 2–3
 - Documents: dimensions, ratios, formats, budgets, crops, safe areas, naming, loading, and required/optional status implemented in Tasks 4–5
 - Updates: plugin version from `0.4.3` to `0.5.0`
 
-- [ ] **Step 1: Write failing documentation contracts**
-
-Assert the asset guide includes every requested column and exact slot: top banners, Hero, Eligibility, Conditions, Final CTA, and provider logo. Assert exact dimensions/ratios, AVIF/WebP requirements, recommended and maximum file sizes, crop, object position, text-safe areas, HTML-versus-baked text, loading priority, fold position, admin location, and filename examples.
-
-- [ ] **Step 2: Run the test to verify failure**
-
-Run: `node --test tests/documentation-contract.test.mjs`
-
-Expected: FAIL because the asset guide does not exist.
-
-- [ ] **Step 3: Write the practical designer-facing guide**
+- [ ] **Step 1: Write the practical designer-facing guide**
 
 Document:
 
@@ -417,20 +404,22 @@ Document:
 
 Provide exact filenames, safe zones, subject placement, crop rules, and admin tabs/fields.
 
-- [ ] **Step 4: Update README, changelog, and version**
+- [ ] **Step 2: Update README, changelog, and version**
 
 Explain four modes, same-Page switching, Visual submenu location, provider source of truth, media fallbacks, image guide link, and verification commands. Add a `0.5.0` changelog entry and bump only the plugin header version.
 
-- [ ] **Step 5: Verify and commit**
+- [ ] **Step 3: Self-review the guide against the specification**
 
-Run: `node --test tests/documentation-contract.test.mjs`
+Check every requested column and exact slot: top banners, Hero, Eligibility, Conditions, Final CTA, and provider logo. Confirm dimensions/ratios, formats, recommended/maximum sizes, crop, object position, safe areas, HTML-versus-baked text, loading, fold position, admin location, and filenames are explicit with no placeholder language.
+
+- [ ] **Step 4: Verify and commit**
 
 Run: `php -l ts-bnpl.php`
 
 Expected: all PASS.
 
 ```bash
-git add docs README.md CHANGELOG.md ts-bnpl.php tests/documentation-contract.test.mjs
+git add docs README.md CHANGELOG.md ts-bnpl.php
 git commit -m "docs: publish visual landing media requirements"
 ```
 
@@ -446,7 +435,7 @@ git commit -m "docs: publish visual landing media requirements"
 
 - [ ] **Step 1: Run the complete automated suite**
 
-Run: `php tests/mode-routing.test.php && php tests/visual-settings.test.php && php tests/responsive-media.test.php && php tests/providers.test.php`
+Run: `php tests/mode-routing.test.php && php tests/legacy-landing-routing.test.php && php tests/visual-settings.test.php && php tests/responsive-media.test.php && php tests/providers.test.php && php tests/visual-admin.test.php && php tests/visual-render.test.php`
 
 Run: `node --test tests/*.test.mjs`
 

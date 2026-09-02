@@ -43,6 +43,11 @@ class TS_BNPL_Display {
 	const MODE_LANDING = 'landing';
 
 	/**
+	 * حالت آزمایشی صفحه‌ی فرود تصویری.
+	 */
+	const MODE_VISUAL_LANDING = 'visual_landing';
+
+	/**
 	 * متن پیش‌فرض تیزر.
 	 *
 	 * عمداً نه مبلغ قسط دارد، نه نام ارائه‌دهنده. خرید نقدی باید CTA اصلی
@@ -99,7 +104,20 @@ class TS_BNPL_Display {
 	 * @return array<int,string>
 	 */
 	public static function modes() {
-		return array( self::MODE_ACCORDION, self::MODE_MODAL, self::MODE_LANDING );
+		return array( self::MODE_ACCORDION, self::MODE_MODAL, self::MODE_LANDING, self::MODE_VISUAL_LANDING );
+	}
+
+	/**
+	 * آیا حالت داده‌شده کاربر را به صفحه‌ی فرود می‌فرستد؟
+	 *
+	 * @param string|null $mode حالت صریح یا null برای حالت جاری.
+	 *
+	 * @return bool
+	 */
+	public static function is_landing_mode( $mode = null ) {
+		$mode = null === $mode ? self::get_mode() : (string) $mode;
+
+		return in_array( $mode, array( self::MODE_LANDING, self::MODE_VISUAL_LANDING ), true );
 	}
 
 	/**
@@ -137,7 +155,7 @@ class TS_BNPL_Display {
 		 * حالت لندینگ بدون صفحه‌ی انتخاب‌شده معنا ندارد؛ تیزر به جای لینک
 		 * مرده، به حالت بازشونده برمی‌گردد تا کاربر بی‌جواب نماند.
 		 */
-		if ( self::MODE_LANDING === $mode && '' === self::landing_url() ) {
+		if ( self::is_landing_mode( $mode ) && '' === self::landing_url() ) {
 			return self::MODE_ACCORDION;
 		}
 
@@ -378,7 +396,7 @@ class TS_BNPL_Display {
 
 		$mode       = self::get_mode();
 		$is_modal   = self::MODE_MODAL === $mode;
-		$is_landing = self::MODE_LANDING === $mode;
+		$is_landing = self::is_landing_mode( $mode );
 		$teaser     = self::get_teaser_text();
 
 		$variant = self::MODE_ACCORDION;
@@ -590,7 +608,7 @@ class TS_BNPL_Display {
 		}
 
 		// در حالت لندینگ، تیزر یک لینک است و مودالی باز نمی‌شود.
-		if ( self::MODE_LANDING === self::get_mode() ) {
+		if ( self::is_landing_mode() ) {
 			return false;
 		}
 

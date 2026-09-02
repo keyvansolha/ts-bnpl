@@ -65,7 +65,7 @@ class TS_BNPL_Landing {
 	 * @return string[]
 	 */
 	public static function body_class( $classes ) {
-		if ( self::is_landing() ) {
+		if ( self::should_render_legacy() ) {
 			$classes[] = 'ts-bnpl-landing-page';
 		}
 
@@ -116,6 +116,18 @@ class TS_BNPL_Landing {
 		return $page_id > 0 && is_page( $page_id );
 	}
 
+	/**
+	 * آیا نسخه‌ی قدیمی لندینگ باید روی صفحه‌ی انتخاب‌شده رندر شود؟
+	 *
+	 * بازدید مستقیم صفحه در حالت‌های بازشونده و پنل، رفتار فعلی خود را حفظ
+	 * می‌کند. فقط حالت تصویری مالک رندر همان صفحه می‌شود.
+	 *
+	 * @return bool
+	 */
+	public static function should_render_legacy() {
+		return self::is_landing() && TS_BNPL_Display::MODE_VISUAL_LANDING !== TS_BNPL_Display::get_mode();
+	}
+
 	/*
 	|--------------------------------------------------------------------------
 	| بارگذاری استایل
@@ -128,7 +140,7 @@ class TS_BNPL_Landing {
 	 * @return void
 	 */
 	public static function enqueue_assets() {
-		if ( ! self::is_landing() ) {
+		if ( ! self::should_render_legacy() ) {
 			return;
 		}
 
@@ -296,7 +308,7 @@ class TS_BNPL_Landing {
 	 * @return string
 	 */
 	public static function render( $content ) {
-		if ( ! self::is_landing() || ! in_the_loop() || ! is_main_query() ) {
+		if ( ! self::should_render_legacy() || ! in_the_loop() || ! is_main_query() ) {
 			return $content;
 		}
 

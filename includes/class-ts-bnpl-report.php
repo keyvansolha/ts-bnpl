@@ -433,6 +433,11 @@ class TS_BNPL_Report {
 					<strong><?php esc_html_e( 'صفحه‌ی فرود', 'ts-bnpl' ); ?></strong>
 					<span><?php esc_html_e( 'با کلیک، کاربر به صفحه‌ی راهنمای کامل خرید اعتباری می‌رود. نیازمند انتخاب صفحه در بخش پایین.', 'ts-bnpl' ); ?></span>
 				</label>
+				<label>
+					<input type="radio" name="mode" value="<?php echo esc_attr( TS_BNPL_Display::MODE_VISUAL_LANDING ); ?>" <?php checked( $settings['mode'], TS_BNPL_Display::MODE_VISUAL_LANDING ); ?> />
+					<strong><?php esc_html_e( 'لندینگ تصویری (آزمایشی)', 'ts-bnpl' ); ?></strong>
+					<span><?php esc_html_e( 'همان برگه‌ی فرود را با چیدمان تصویری مستقل نمایش می‌دهد و با بازگشت به حالت قبلی فوراً قابل برگشت است.', 'ts-bnpl' ); ?></span>
+				</label>
 			</fieldset>
 
 			<p class="ts-bnpl-report__teaser-field">
@@ -499,7 +504,7 @@ class TS_BNPL_Report {
 		$landing = isset( $_POST['landing_page'] ) ? absint( wp_unslash( $_POST['landing_page'] ) ) : 0;
 
 		// فقط یک برگه‌ی منتشرشده پذیرفته می‌شود.
-		if ( $landing > 0 && 'page' !== get_post_type( $landing ) ) {
+		if ( $landing > 0 && ( 'page' !== get_post_type( $landing ) || 'publish' !== get_post_status( $landing ) ) ) {
 			$landing = 0;
 		}
 
