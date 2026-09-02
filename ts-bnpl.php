@@ -123,6 +123,9 @@ function ts_bnpl_bootstrap() {
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-checkout.php';
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-display.php';
 	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-landing.php';
+	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-responsive-media.php';
+	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-providers.php';
+	require_once TS_BNPL_PATH . 'includes/class-ts-bnpl-visual-settings.php';
 
 	TS_BNPL_Data::init();
 	TS_BNPL_Admin::init();
