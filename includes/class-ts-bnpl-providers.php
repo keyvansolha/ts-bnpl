@@ -140,26 +140,18 @@ class TS_BNPL_Providers {
 	}
 
 	/**
-	 * وضعیت عمومی درگاه.
+	 * آیا درگاه در تنظیمات فروشگاه فعال است؟
+	 *
+	 * قابلیت is_available() به سبد، نشست و صفحه‌ی تسویه‌حساب وابسته است و در
+	 * یک لندینگ عمومی معیار پایداری برای معرفی سرویس نیست. شرایط همان خرید
+	 * همچنان در checkout توسط خود ووکامرس و درگاه کنترل می‌شود.
 	 *
 	 * @param mixed $gateway درگاه.
 	 *
 	 * @return bool
 	 */
 	private static function is_operational( $gateway ) {
-		if ( ! is_object( $gateway ) || ! isset( $gateway->enabled ) || 'yes' !== $gateway->enabled ) {
-			return false;
-		}
-
-		if ( ! method_exists( $gateway, 'is_available' ) ) {
-			return true;
-		}
-
-		try {
-			return (bool) $gateway->is_available();
-		} catch ( Throwable $error ) {
-			return false;
-		}
+		return is_object( $gateway ) && isset( $gateway->enabled ) && 'yes' === $gateway->enabled;
 	}
 
 	/**
@@ -177,10 +169,6 @@ class TS_BNPL_Providers {
 		if ( TS_BNPL_GATEWAY_ID === $provider_id && self::is_test_mode() ) {
 			return __( 'درگاه در حالت آزمایشی است و به‌عنوان سرویس عمومی فعال نمایش داده نمی‌شود.', 'ts-bnpl' );
 		}
-		if ( ! self::is_operational( $gateway ) ) {
-			return __( 'درگاه هنوز کامل پیکربندی یا در دسترس نیست و در لندینگ عمومی نمایش داده نمی‌شود.', 'ts-bnpl' );
-		}
-
 		return '';
 	}
 

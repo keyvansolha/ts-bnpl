@@ -234,12 +234,7 @@ class TS_BNPL_Display {
 		}
 
 		if ( $is_product ) {
-			wp_enqueue_style(
-				'ts-bnpl',
-				TS_BNPL_URL . 'assets/css/ts-bnpl.css',
-				array(),
-				TS_BNPL_VERSION
-			);
+			self::enqueue_style();
 		}
 
 		wp_enqueue_script(
@@ -248,6 +243,20 @@ class TS_BNPL_Display {
 			array( 'jquery' ),
 			TS_BNPL_VERSION,
 			true
+		);
+	}
+
+	/**
+	 * بارگذاری شیت مؤلفه‌ی قیمت/تیزر برای مصرف‌کننده‌های خارج از صفحه محصول.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_style() {
+		wp_enqueue_style(
+			'ts-bnpl',
+			TS_BNPL_URL . 'assets/css/ts-bnpl.css',
+			array(),
+			TS_BNPL_VERSION
 		);
 	}
 
@@ -394,75 +403,35 @@ class TS_BNPL_Display {
 			return '';
 		}
 
-		$mode       = self::get_mode();
-		$is_modal   = self::MODE_MODAL === $mode;
-		$is_landing = self::is_landing_mode( $mode );
-		$teaser     = self::get_teaser_text();
+		$mode = self::get_mode();
 
-		$variant = self::MODE_ACCORDION;
-
-		if ( $is_modal ) {
-			$variant = self::MODE_MODAL;
-		} elseif ( $is_landing ) {
-			$variant = self::MODE_LANDING;
+		if ( self::is_landing_mode( $mode ) ) {
+			return self::landing_teaser_html( self::landing_url() );
 		}
+
+		$is_modal = self::MODE_MODAL === $mode;
+
+		$variant = $is_modal ? self::MODE_MODAL : self::MODE_ACCORDION;
 
 		ob_start();
 		?>
 		<div class="ts-bnpl__offer ts-bnpl__offer--<?php echo esc_attr( $variant ); ?>">
-			<?php
-			/*
-			 * حالت لندینگ یک پیمایش واقعی است نه یک ویجت، پس عنصرش هم لینک
-			 * است نه دکمه: باز شدن در تب جدید، کپی کردن نشانی و خزنده‌ها
-			 * همگی درست کار می‌کنند.
-			 */
-			?>
-			<<?php echo $is_landing ? 'a' : 'button'; ?>
+			<button
 				class="ts-bnpl__teaser"
-				<?php if ( $is_landing ) : ?>
-					href="<?php echo esc_url( self::landing_url() ); ?>"
-				<?php else : ?>
-					type="button"
-				<?php endif; ?>
+				type="button"
 				<?php if ( $is_modal ) : ?>
 					data-ts-bnpl-open
 					aria-haspopup="dialog"
 					aria-controls="<?php echo esc_attr( self::MODAL_ID ); ?>"
-				<?php elseif ( ! $is_landing ) : ?>
+				<?php else : ?>
 					data-ts-bnpl-toggle
 					aria-expanded="false"
 				<?php endif; ?>
 				>
-				<span class="ts-bnpl__teaser-icon" aria-hidden="true">
-					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-						<rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect>
-						<path d="M2.5 10h19M6 14.5h3"></path>
-					</svg>
-				</span>
+				<?php self::teaser_content( $variant ); ?>
+			</button>
 
-				<span class="ts-bnpl__teaser-text"><?php echo esc_html( $teaser ); ?></span>
-
-				<?php if ( $is_modal ) : ?>
-					<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'جزئیات', 'ts-bnpl' ); ?></span>
-				<?php elseif ( $is_landing ) : ?>
-					<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'بیشتر بدانید', 'ts-bnpl' ); ?></span>
-					<span class="ts-bnpl__teaser-arrow" aria-hidden="true">
-						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-							<path d="M15 18l-6-6 6-6"></path>
-						</svg>
-					</span>
-				<?php else : ?>
-					<span class="ts-bnpl__teaser-chevron" aria-hidden="true">
-						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
-							<path d="m6 9 6 6 6-6"></path>
-						</svg>
-					</span>
-				<?php endif; ?>
-			</<?php echo $is_landing ? 'a' : 'button'; ?>>
-
-			<?php if ( $is_landing ) : ?>
-				<?php /* در این حالت جزئیات روی خود لندینگ توضیح داده می‌شود. */ ?>
-			<?php elseif ( $is_modal ) : ?>
+			<?php if ( $is_modal ) : ?>
 				<?php /* منبع پنهان: جاوااسکریپت هنگام باز شدن آن را داخل مودال کپی می‌کند تا با variation جاری بخواند. */ ?>
 				<div class="ts-bnpl__plan-source" hidden>
 					<?php echo self::installment_row_html( $total, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ داخل متد اسکیپ می‌شود. ?>
@@ -476,6 +445,69 @@ class TS_BNPL_Display {
 		<?php
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * رندر همان تیزر واقعی صفحه محصول به‌صورت لینک به مقصد دلخواه.
+	 *
+	 * @param string $href مقصد امن لینک.
+	 *
+	 * @return string
+	 */
+	public static function landing_teaser_html( $href ) {
+		$href = esc_url_raw( trim( (string) $href ) );
+
+		if ( '' === $href ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<div class="ts-bnpl__offer ts-bnpl__offer--landing">
+			<a class="ts-bnpl__teaser" href="<?php echo esc_url( $href ); ?>">
+				<?php self::teaser_content( self::MODE_LANDING ); ?>
+			</a>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * محتوای مشترک داخل کنترل تیزر.
+	 *
+	 * @param string $variant accordion، modal یا landing.
+	 *
+	 * @return void
+	 */
+	private static function teaser_content( $variant ) {
+		?>
+		<span class="ts-bnpl__teaser-icon" aria-hidden="true">
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+				<rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect>
+				<path d="M2.5 10h19M6 14.5h3"></path>
+			</svg>
+		</span>
+
+		<span class="ts-bnpl__teaser-text"><?php echo esc_html( self::get_teaser_text() ); ?></span>
+
+		<?php if ( self::MODE_MODAL === $variant ) : ?>
+			<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'جزئیات', 'ts-bnpl' ); ?></span>
+		<?php elseif ( self::MODE_LANDING === $variant ) : ?>
+			<span class="ts-bnpl__teaser-more"><?php esc_html_e( 'بیشتر بدانید', 'ts-bnpl' ); ?></span>
+			<span class="ts-bnpl__teaser-arrow" aria-hidden="true">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+					<path d="M15 18l-6-6 6-6"></path>
+				</svg>
+			</span>
+		<?php else : ?>
+			<span class="ts-bnpl__teaser-chevron" aria-hidden="true">
+				<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+					<path d="m6 9 6 6 6-6"></path>
+				</svg>
+			</span>
+		<?php endif; ?>
+		<?php
 	}
 
 	/**

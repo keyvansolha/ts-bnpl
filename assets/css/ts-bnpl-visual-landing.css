@@ -27,6 +27,7 @@ body.ts-bnpl-visual-landing-page #site-main > .page-content {
 	--ts-visual-navy: #002864;
 	--ts-visual-radius: 20px;
 	--ts-visual-shadow: 0 18px 48px rgb(0 40 100 / 8%);
+	--ts-visual-anchor-offset: 210px;
 	box-sizing: border-box;
 	display: grid;
 	gap: clamp(36px, 5vw, 72px);
@@ -90,6 +91,11 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	min-width: 0;
 }
 
+#ts-bnpl-visual-how,
+#ts-bnpl-visual-products {
+	scroll-margin-top: var(--ts-visual-anchor-offset);
+}
+
 .ts-bnpl-visual-heading {
 	max-width: 760px;
 	margin-block-end: 28px;
@@ -148,7 +154,12 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	box-shadow: var(--ts-visual-shadow);
 }
 
-.ts-bnpl-visual-banner__track,
+.ts-bnpl-visual-banner__track {
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
 .ts-bnpl-visual-banner__slide,
 .ts-bnpl-visual-banner__slide > a,
 .ts-bnpl-visual-banner__slide picture {
@@ -514,20 +525,6 @@ a.ts-bnpl-visual-provider:hover {
 	object-position: center;
 }
 
-.ts-bnpl-visual-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	margin-block-start: 18px;
-	padding: 9px 14px;
-	border-radius: 999px;
-	background: var(--ts-visual-soft);
-	background: color-mix(in srgb, var(--ts-visual-accent) 23%, var(--ts-visual-surface));
-	color: var(--ts-visual-ink);
-	font-size: 13px;
-	font-weight: 800;
-}
-
 .ts-bnpl-visual-conditions {
 	background: var(--ts-visual-soft);
 }
@@ -660,6 +657,14 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	outline-offset: 3px !important;
 }
 
+@media (min-width: 992px) {
+	.ts-bnpl-visual-final {
+		grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+		height: clamp(360px, 28vw, 420px);
+		min-height: 0;
+	}
+}
+
 @media (max-width: 991.98px) {
 	.ts-bnpl-visual-hero {
 		grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
@@ -685,6 +690,7 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 
 @media (max-width: 767.98px) {
 	.ts-bnpl-visual-landing {
+		--ts-visual-anchor-offset: 112px;
 		gap: 36px;
 		padding-block-start: 4px;
 	}
@@ -710,9 +716,12 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	}
 
 	.ts-bnpl-visual-hero__media,
-	.ts-bnpl-visual-split__media,
-	.ts-bnpl-visual-final__media {
+	.ts-bnpl-visual-split__media {
 		aspect-ratio: 1 / 1;
+	}
+
+	.ts-bnpl-visual-final__media {
+		aspect-ratio: 4 / 3;
 	}
 
 	.ts-bnpl-visual-hero__content h1 {

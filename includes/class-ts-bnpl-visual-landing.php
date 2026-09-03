@@ -61,9 +61,13 @@ class TS_BNPL_Visual_Landing {
 
 		$deps = TS_BNPL_Landing::enqueue_theme_card_assets( true );
 		self::enqueue_faq_assets();
+		TS_BNPL_Display::enqueue_style();
 
 		if ( wp_style_is( 'ts-faq', 'enqueued' ) ) {
 			$deps[] = 'ts-faq';
+		}
+		if ( wp_style_is( 'ts-bnpl', 'enqueued' ) ) {
+			$deps[] = 'ts-bnpl';
 		}
 
 		wp_enqueue_style(
@@ -212,7 +216,7 @@ class TS_BNPL_Visual_Landing {
 			<div class="ts-bnpl-visual-heading">
 				<p class="ts-bnpl-visual-eyebrow"><?php esc_html_e( 'انتخاب در مرحله‌ی پرداخت', 'ts-bnpl' ); ?></p>
 				<h2 id="ts-bnpl-visual-providers-title"><?php esc_html_e( 'سرویس‌های اعتباری فعال', 'ts-bnpl' ); ?></h2>
-				<p><?php esc_html_e( 'فقط سرویس‌هایی اینجا نمایش داده می‌شوند که همین حالا در پرداخت تهران اسپیکر فعال و آماده باشند.', 'ts-bnpl' ); ?></p>
+				<p><?php esc_html_e( 'این فهرست سرویس‌هایی را نشان می‌دهد که در تنظیمات فروشگاه فعال‌اند؛ نمایش نهایی هر روش در پرداخت به شرایط همان سبد بستگی دارد.', 'ts-bnpl' ); ?></p>
 			</div>
 			<?php if ( $providers ) : ?>
 				<div class="ts-bnpl-visual-providers__grid" data-provider-count="<?php echo esc_attr( (string) count( $providers ) ); ?>">
@@ -221,7 +225,7 @@ class TS_BNPL_Visual_Landing {
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
-				<p class="ts-bnpl-visual-empty"><?php esc_html_e( 'سرویس فعال متناسب با این خرید در مرحله‌ی تسویه‌حساب نمایش داده می‌شود.', 'ts-bnpl' ); ?></p>
+				<p class="ts-bnpl-visual-empty"><?php esc_html_e( 'در حال حاضر هیچ سرویس اعتباری فعالی در تنظیمات فروشگاه ثبت نشده است.', 'ts-bnpl' ); ?></p>
 			<?php endif; ?>
 		</section>
 		<?php
@@ -272,9 +276,10 @@ class TS_BNPL_Visual_Landing {
 	/** @return void */
 	private static function section_eligibility( $section ) {
 		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-split__image', 'sizes' => '(max-width: 767px) 100vw, 50vw' ) );
+		$teaser = TS_BNPL_Display::landing_teaser_html( '#ts-bnpl-visual-products' );
 		?>
 		<section class="ts-bnpl-visual-eligibility ts-bnpl-visual-section ts-bnpl-visual-split<?php echo '' === $visual ? ' ts-bnpl-visual-split--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-eligibility-title">
-			<div class="ts-bnpl-visual-split__content"><h2 id="ts-bnpl-visual-eligibility-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><span class="ts-bnpl-visual-badge"><i class="icon-check" aria-hidden="true"></i><?php esc_html_e( 'قابل خرید اعتباری', 'ts-bnpl' ); ?></span></div>
+			<div class="ts-bnpl-visual-split__content"><h2 id="ts-bnpl-visual-eligibility-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><?php if ( '' !== $teaser ) : ?><div class="ts-bnpl ts-bnpl--standalone" dir="rtl"><?php echo $teaser; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- canonical component escapes its output. ?></div><?php endif; ?></div>
 			<?php if ( '' !== $visual ) : ?><div class="ts-bnpl-visual-split__media"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div><?php endif; ?>
 		</section>
 		<?php
@@ -365,7 +370,7 @@ class TS_BNPL_Visual_Landing {
 
 	/** @return void */
 	private static function section_final_cta( $section ) {
-		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-final__image', 'sizes' => '(max-width: 767px) 100vw, 45vw' ) );
+		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-final__image', 'sizes' => '(max-width: 767px) 100vw, 40vw' ) );
 		?>
 		<section class="ts-bnpl-visual-final ts-bnpl-visual-section<?php echo '' === $visual ? ' ts-bnpl-visual-final--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-final-title">
 			<div class="ts-bnpl-visual-final__content"><h2 id="ts-bnpl-visual-final-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><?php self::button( $section['label'], $section['url'], false ); ?></div>
@@ -384,9 +389,14 @@ class TS_BNPL_Visual_Landing {
 			if ( ! is_array( $row ) || empty( $row['media'] ) || ! TS_BNPL_Responsive_Media::is_renderable( $row['media'] ) ) {
 				continue;
 			}
+			$media = TS_BNPL_Responsive_Media::normalize( $row['media'] );
+			$url   = isset( $row['url'] ) ? (string) $row['url'] : '';
+			if ( '' !== $url && '' === $media['alt'] ) {
+				$media['alt'] = __( 'مشاهده پیشنهاد خرید اعتباری', 'ts-bnpl' );
+			}
 			$valid[] = array(
-				'media' => TS_BNPL_Responsive_Media::normalize( $row['media'] ),
-				'url'   => isset( $row['url'] ) ? (string) $row['url'] : '',
+				'media' => $media,
+				'url'   => $url,
 			);
 		}
 		return $valid;

@@ -21,8 +21,8 @@ function ts_test_gateway( $id, $enabled, $available, $installment = true ) {
 	return $gateway;
 }
 
-$digipay = ts_test_gateway( 'wbs_digipay', true, true );
-$future  = ts_test_gateway( 'future_credit', true, true );
+$digipay = ts_test_gateway( 'wbs_digipay', true, false );
+$future  = ts_test_gateway( 'future_credit', true, false );
 $normal  = ts_test_gateway( 'cash_gateway', true, true, false );
 
 $registry = new class( array( $digipay, $future, $normal ) ) {
@@ -52,19 +52,15 @@ $entries = array(
 	array( 'provider_id' => 'wbs_digipay', 'display_enabled' => true, 'display_name' => 'دیجی‌پی' ),
 	array( 'provider_id' => 'future_credit', 'display_enabled' => true, 'display_name' => 'آینده' ),
 );
-ts_test_assert_same( 2, count( TS_BNPL_Providers::public_entries( $entries ) ), 'enabled operational providers are public' );
+ts_test_assert_same( 2, count( TS_BNPL_Providers::public_entries( $entries ) ), 'enabled providers remain public outside cart-dependent checkout availability' );
 
 $future->enabled = 'no';
 ts_test_assert_same( 1, count( TS_BNPL_Providers::public_entries( $entries ) ), 'disabled providers are omitted' );
 
-$digipay->available = false;
-ts_test_assert_same( 0, count( TS_BNPL_Providers::public_entries( $entries ) ), 'unconfigured providers are omitted' );
-
-$digipay->available              = true;
 $future->enabled                 = 'yes';
 $GLOBALS['ts_bnpl_test_mode']    = true;
 $test_mode_entries = TS_BNPL_Providers::public_entries( $entries );
-ts_test_assert_same( 1, count( $test_mode_entries ), 'DigiPay test mode does not hide unrelated operational providers' );
+ts_test_assert_same( 1, count( $test_mode_entries ), 'DigiPay test mode does not hide another enabled provider' );
 ts_test_assert_same( 'future_credit', $test_mode_entries[0]['provider_id'], 'test mode excludes DigiPay specifically' );
 
 ts_test_finish();

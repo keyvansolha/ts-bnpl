@@ -491,6 +491,7 @@ class TS_BNPL_Visual_Admin {
 				<?php self::text_field( 'ts_bnpl_visual[final_cta][label]', __( 'متن دکمه', 'ts-bnpl' ), $section['label'] ); ?>
 				<?php self::text_field( 'ts_bnpl_visual[final_cta][url]', __( 'نشانی دکمه', 'ts-bnpl' ), $section['url'], 'url' ); ?>
 			</div>
+			<p class="description"><?php esc_html_e( 'برای دسکتاپ تصویر محصول‌محور افقی 1250×1000 و برای موبایل ترکیب مستقل 1080×1080 آماده کنید؛ فضای خالی زیاد اطراف محصول نگذارید.', 'ts-bnpl' ); ?></p>
 			<?php self::render_media_group( 'ts_bnpl_visual[final_cta][media]', $section['media'] ); ?>
 		</section>
 		<?php

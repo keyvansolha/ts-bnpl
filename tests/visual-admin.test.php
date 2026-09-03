@@ -67,6 +67,8 @@ ts_test_assert_contains( 'data-ts-bnpl-move-up', $html, 'rows have keyboard-acce
 ts_test_assert_contains( 'data-ts-bnpl-move-down', $html, 'rows have keyboard-accessible move down controls' );
 ts_test_assert_false( false !== strpos( $html, 'type="url"' ), 'anchor and relative defaults are not blocked by native absolute-URL validation' );
 ts_test_assert_contains( 'inputmode="url"', $html, 'URL-like text fields still receive an appropriate mobile keyboard hint' );
+ts_test_assert_contains( '1250×1000', $html, 'Final CTA manager recommends the bounded horizontal desktop artwork' );
+ts_test_assert_contains( '1080×1080', $html, 'Final CTA manager keeps a separately composed mobile artwork size' );
 ts_test_assert_contains( 'درگاه در ووکامرس غیرفعال است', $html, 'an inactive configured provider receives an explicit admin warning' );
 
 $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = array(

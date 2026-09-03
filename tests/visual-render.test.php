@@ -55,7 +55,7 @@ $GLOBALS['ts_bnpl_test_attachments']   = array(
 $gateway              = new WC_Payment_Gateway();
 $gateway->id          = 'wbs_digipay';
 $gateway->enabled     = 'yes';
-$gateway->available   = true;
+$gateway->available   = false;
 $gateway->installment = true;
 $gateway->title       = 'دیجی‌پی';
 $manager = new class( $gateway ) {
@@ -136,12 +136,19 @@ ts_test_assert_contains( 'آیا همه‌ی کالاهای سایت را می�
 ts_test_assert_contains( 'اگر کالایی در سبد این امکان را نداشته باشد، روش‌های اعتباری در مرحله‌ی پرداخت نمایش داده نمی‌شوند.', $html, 'FAQ keeps the existing multi-item eligibility answer intact' );
 ts_test_assert_contains( 'تنها تفاوت، روش پرداخت است.', $html, 'FAQ keeps the existing fulfilment answer intact' );
 ts_test_assert_contains( 'دیجی‌پی', $html, 'active DigiPay provider is rendered' );
+ts_test_assert_contains( 'ts-bnpl__offer ts-bnpl__offer--landing', $html, 'eligibility education reuses the canonical product offer' );
+ts_test_assert_contains( 'class="ts-bnpl__teaser"', $html, 'eligibility education reuses the canonical teaser link' );
+ts_test_assert_contains( 'href="#ts-bnpl-visual-products"', $html, 'eligibility teaser points to the eligible-products section' );
+ts_test_assert_contains( '>Teaser</span>', $html, 'eligibility teaser uses the configured canonical product copy' );
+ts_test_assert_false( false !== strpos( $html, 'ts-bnpl-visual-badge' ), 'handmade eligibility badge is removed' );
 ts_test_assert_contains( 'data-product-id="101"', $html, 'first eligible product uses the canonical card boundary' );
 ts_test_assert_contains( 'data-product-id="102"', $html, 'second eligible product stays dynamic' );
 
 TS_BNPL_Visual_Landing::enqueue_assets();
 ts_test_assert_true( TS_BNPL_Landing::$assets_enqueued, 'renderer reuses the existing theme card/carousel bridge' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_styles']['ts-bnpl-visual-landing'] ), 'Visual stylesheet is page-scoped' );
+ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_styles']['ts-bnpl'] ), 'Visual Landing loads the canonical teaser stylesheet' );
+ts_test_assert_true( in_array( 'ts-bnpl', $GLOBALS['ts_bnpl_test_styles']['ts-bnpl-visual-landing']['deps'], true ), 'Visual stylesheet loads after the canonical teaser stylesheet' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['ts-bnpl-visual-landing'] ), 'multi-banner page receives the Visual initializer' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['swiper'] ), 'top banner forces the existing Swiper bundle on every viewport' );
 
@@ -166,6 +173,7 @@ $text_only_settings['banners'] = array( array( 'media' => $linked_media, 'url' =
 $GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = $text_only_settings;
 $linked_banner_html = TS_BNPL_Visual_Landing::landing_html();
 ts_test_assert_contains( 'aria-label="مشاهده پیشنهاد خرید اعتباری"', $linked_banner_html, 'a linked decorative banner always has an accessible name' );
+ts_test_assert_contains( 'alt="مشاهده پیشنهاد خرید اعتباری"', $linked_banner_html, 'a linked banner receives a meaningful image-alt fallback' );
 
 $text_only_settings['banners'] = array();
 $text_only_settings['hero']['media'] = $media;
