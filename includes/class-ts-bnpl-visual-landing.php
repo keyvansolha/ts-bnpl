@@ -266,7 +266,7 @@ class TS_BNPL_Visual_Landing {
 			<div class="ts-bnpl-visual-heading"><h2 id="ts-bnpl-visual-how-title"><?php esc_html_e( 'خرید اعتباری چطور انجام می‌شود؟', 'ts-bnpl' ); ?></h2><p><?php esc_html_e( 'کل مسیر همان خرید همیشگی است و فقط در گام آخر، روش پرداخت را تغییر می‌دهید.', 'ts-bnpl' ); ?></p></div>
 			<ol class="ts-bnpl-visual-steps">
 				<?php foreach ( $steps as $index => $step ) : ?>
-					<li class="ts-bnpl-visual-steps__item"><span class="ts-bnpl-visual-steps__number"><?php echo esc_html( self::persian_digits( $index + 1 ) ); ?></span><i class="<?php echo esc_attr( $step['icon'] ); ?>" aria-hidden="true"></i><h3><?php echo esc_html( $step['title'] ); ?></h3><p><?php echo esc_html( $step['text'] ); ?></p></li>
+					<li class="ts-bnpl-visual-steps__item"><span class="ts-bnpl-visual-steps__marker"><i class="<?php echo esc_attr( $step['icon'] ); ?>" aria-hidden="true"></i><span class="ts-bnpl-visual-steps__number"><?php echo esc_html( self::persian_digits( $index + 1 ) ); ?></span></span><h3><?php echo esc_html( $step['title'] ); ?></h3><p><?php echo esc_html( $step['text'] ); ?></p></li>
 				<?php endforeach; ?>
 			</ol>
 		</section>
@@ -368,13 +368,55 @@ class TS_BNPL_Visual_Landing {
 		<?php
 	}
 
-	/** @return void */
+	/**
+	 * فراخوان پایانی.
+	 *
+	 * با تصویر، دقیقاً مثل بنر بالای صفحه یک تصویر تمام‌عرض لینک‌دار است و متن و
+	 * دکمه داخل خود تصویر طراحی می‌شوند. بدون تصویر، همان کارت متنی قبلی می‌ماند.
+	 *
+	 * @param array<string,mixed> $section داده‌ی بخش.
+	 *
+	 * @return void
+	 */
 	private static function section_final_cta( $section ) {
-		$visual = TS_BNPL_Responsive_Media::render( $section['media'], array( 'class' => 'ts-bnpl-visual-final__image', 'sizes' => '(max-width: 767px) 100vw, 40vw' ) );
+		if ( TS_BNPL_Responsive_Media::is_renderable( $section['media'] ) ) {
+			self::final_cta_banner( $section );
+
+			return;
+		}
 		?>
-		<section class="ts-bnpl-visual-final ts-bnpl-visual-section<?php echo '' === $visual ? ' ts-bnpl-visual-final--text-only' : ''; ?>" aria-labelledby="ts-bnpl-visual-final-title">
+		<section class="ts-bnpl-visual-final ts-bnpl-visual-section ts-bnpl-visual-final--text-only" aria-labelledby="ts-bnpl-visual-final-title">
 			<div class="ts-bnpl-visual-final__content"><h2 id="ts-bnpl-visual-final-title"><?php echo esc_html( $section['title'] ); ?></h2><p><?php echo esc_html( $section['description'] ); ?></p><?php self::button( $section['label'], $section['url'], false ); ?></div>
-			<?php if ( '' !== $visual ) : ?><div class="ts-bnpl-visual-final__media"><?php echo $visual; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div><?php endif; ?>
+		</section>
+		<?php
+	}
+
+	/**
+	 * نسخه‌ی بنری فراخوان پایانی.
+	 *
+	 * @param array<string,mixed> $section داده‌ی بخش.
+	 *
+	 * @return void
+	 */
+	private static function final_cta_banner( $section ) {
+		$media = TS_BNPL_Responsive_Media::normalize( $section['media'] );
+
+		if ( '' === $media['alt'] ) {
+			$media['alt'] = '' !== $section['title'] ? $section['title'] : __( 'مشاهده کالاهای واجد شرایط خرید اعتباری', 'ts-bnpl' );
+		}
+
+		$image = TS_BNPL_Responsive_Media::render(
+			$media,
+			array(
+				'class' => 'ts-bnpl-visual-final__image',
+				'sizes' => '(max-width: 650px) 100vw, min(1326px, 100vw)',
+			)
+		);
+		?>
+		<section class="ts-bnpl-visual-final ts-bnpl-visual-final--banner ts-bnpl-visual-section" aria-label="<?php echo esc_attr( '' !== $section['title'] ? $section['title'] : __( 'فراخوان خرید اعتباری', 'ts-bnpl' ) ); ?>">
+			<?php if ( '' !== $section['url'] ) : ?><a class="ts-bnpl-visual-final__link" href="<?php echo esc_url( $section['url'] ); ?>" aria-label="<?php echo esc_attr( $media['alt'] ); ?>"><?php endif; ?>
+			<?php echo $image; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- component escapes attributes. ?>
+			<?php if ( '' !== $section['url'] ) : ?></a><?php endif; ?>
 		</section>
 		<?php
 	}

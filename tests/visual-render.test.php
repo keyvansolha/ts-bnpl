@@ -130,6 +130,8 @@ ts_test_assert_contains( 'data-slide-count="2"', $html, 'multiple valid top bann
 ts_test_assert_same( 1, substr_count( $html, 'data-ts-bnpl-visual-banner' ), 'only the top marketing media is a slider' );
 ts_test_assert_contains( 'theme/images/logo.svg', $html, 'Hero reuses the existing rotating SVG' );
 ts_test_assert_same( 4, substr_count( $html, 'ts-bnpl-visual-steps__item' ), 'purchase flow keeps exactly four steps' );
+ts_test_assert_same( 4, substr_count( $html, 'ts-bnpl-visual-steps__marker' ), 'each step number is anchored to its own icon marker' );
+ts_test_assert_contains( '<span class="ts-bnpl-visual-steps__marker"><i class="icon-speaker" aria-hidden="true"></i><span class="ts-bnpl-visual-steps__number">', $html, 'the step badge is a child of the marker, not a free-floating sibling' );
 ts_test_assert_contains( 'درباره‌ی مبلغ نهایی', $html, 'conditions retain the current factual subject' );
 ts_test_assert_contains( 'بر اساس روش اعتباری‌ای که انتخاب می‌کنید مشخص و به شما نمایش داده می‌شود.', $html, 'conditions preserve the existing factual pricing explanation' );
 ts_test_assert_contains( 'آیا همه‌ی کالاهای سایت را می‌شود اعتباری خرید؟', $html, 'FAQ retains current content' );
@@ -151,6 +153,18 @@ ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_styles']['ts-bnpl'] ), 'Visua
 ts_test_assert_true( in_array( 'ts-bnpl', $GLOBALS['ts_bnpl_test_styles']['ts-bnpl-visual-landing']['deps'], true ), 'Visual stylesheet loads after the canonical teaser stylesheet' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['ts-bnpl-visual-landing'] ), 'multi-banner page receives the Visual initializer' );
 ts_test_assert_true( isset( $GLOBALS['ts_bnpl_test_scripts']['swiper'] ), 'top banner forces the existing Swiper bundle on every viewport' );
+
+ts_test_assert_contains( 'ts-bnpl-visual-final--banner', $html, 'a configured final CTA visual renders as a full-width banner' );
+ts_test_assert_false( false !== strpos( $html, 'ts-bnpl-visual-final__content' ), 'the banner CTA drops the empty navy text column' );
+ts_test_assert_contains( 'class="ts-bnpl-visual-final__link" href="#ts-bnpl-visual-products"', $html, 'the whole final banner is one link to the configured destination' );
+
+$banner_cta_settings = TS_BNPL_Visual_Settings::defaults();
+$banner_cta_settings['final_cta']['media'] = $media;
+$banner_cta_settings['final_cta']['media']['alt'] = '';
+$GLOBALS['ts_bnpl_test_options'][ TS_BNPL_Visual_Settings::OPTION ] = $banner_cta_settings;
+$banner_cta_html = TS_BNPL_Visual_Landing::landing_html();
+ts_test_assert_contains( 'alt="' . $banner_cta_settings['final_cta']['title'] . '"', $banner_cta_html, 'a final banner without stored alt falls back to the section title' );
+ts_test_assert_contains( 'aria-label="' . $banner_cta_settings['final_cta']['title'] . '"', $banner_cta_html, 'the final banner link carries an accessible name' );
 
 $text_only_settings = TS_BNPL_Visual_Settings::defaults();
 $text_only_settings['banners'] = array( array( 'media' => $media, 'url' => '' ) );

@@ -430,7 +430,7 @@ a.ts-bnpl-visual-provider:hover {
 
 .ts-bnpl-visual-steps::before {
 	position: absolute;
-	top: 42px;
+	top: 52px;
 	inset-inline: 9%;
 	height: 1px;
 	background: var(--ts-visual-border);
@@ -447,14 +447,21 @@ a.ts-bnpl-visual-provider:hover {
 	text-align: center;
 }
 
-.ts-bnpl-visual-steps__item > i {
+.ts-bnpl-visual-steps__marker {
 	position: relative;
 	z-index: 1;
-	display: grid;
-	place-items: center;
+	display: block;
+	flex: 0 0 auto;
 	width: 58px;
 	height: 58px;
 	margin-block: 0 18px;
+}
+
+.ts-bnpl-visual-steps__marker > i {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
 	border: 8px solid var(--ts-visual-surface);
 	border-radius: 50%;
 	background: var(--ts-visual-soft);
@@ -462,20 +469,23 @@ a.ts-bnpl-visual-provider:hover {
 	font-size: 22px;
 }
 
+/* Badge centre sits on the 42px disc edge at 45deg: 21px * cos(45deg) = 14.85px. */
 .ts-bnpl-visual-steps__number {
 	position: absolute;
 	z-index: 2;
-	top: 12px;
-	inset-inline-start: calc(50% + 17px);
+	top: 2px;
+	inset-inline-start: 2px;
 	display: grid;
 	place-items: center;
 	width: 24px;
 	height: 24px;
+	border: 2px solid var(--ts-visual-surface);
 	border-radius: 50%;
 	background: var(--ts-visual-navy);
 	color: #fff;
 	font-size: 12px;
 	font-weight: 800;
+	line-height: 1;
 }
 
 .ts-bnpl-visual-steps__item h3 {
@@ -643,6 +653,27 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	object-position: center;
 }
 
+/* Image-first final CTA: one full-bleed banner, exactly like the top slider. */
+.ts-bnpl-visual-final--banner {
+	display: block;
+	overflow: hidden;
+	width: 100%;
+	height: auto;
+	min-height: 0;
+	aspect-ratio: 1326 / 400;
+	border: 1px solid var(--ts-visual-border);
+	border-radius: var(--ts-visual-radius);
+	background: var(--ts-visual-soft);
+	box-shadow: var(--ts-visual-shadow);
+}
+
+.ts-bnpl-visual-final--banner .ts-bnpl-visual-final__link,
+.ts-bnpl-visual-final--banner picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
 /* Optional artwork must never leave an empty desktop column. */
 .ts-bnpl-visual-hero.ts-bnpl-visual-hero--text-only,
 .ts-bnpl-visual-split--text-only,
@@ -658,7 +689,7 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 }
 
 @media (min-width: 992px) {
-	.ts-bnpl-visual-final {
+	.ts-bnpl-visual-final:not(.ts-bnpl-visual-final--banner) {
 		grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
 		height: clamp(360px, 28vw, 420px);
 		min-height: 0;
@@ -759,7 +790,7 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	.ts-bnpl-visual-steps::before {
 		top: 28px;
 		bottom: 28px;
-		inset-inline-start: 28px;
+		inset-inline-start: 29px;
 		inset-inline-end: auto;
 		width: 1px;
 		height: auto;
@@ -774,14 +805,9 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 		text-align: start;
 	}
 
-	.ts-bnpl-visual-steps__item > i {
+	.ts-bnpl-visual-steps__marker {
 		grid-row: 1 / span 2;
 		margin: 0;
-	}
-
-	.ts-bnpl-visual-steps__number {
-		top: 5px;
-		inset-inline-start: 40px;
 	}
 
 	.ts-bnpl-visual-steps__item h3,
@@ -811,7 +837,8 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 }
 
 @media (max-width: 650px) {
-	.ts-bnpl-visual-banner {
+	.ts-bnpl-visual-banner,
+	.ts-bnpl-visual-final--banner {
 		aspect-ratio: 4 / 3;
 		border-radius: 16px;
 	}

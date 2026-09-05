@@ -485,13 +485,14 @@ class TS_BNPL_Visual_Admin {
 		?>
 		<section class="card ts-bnpl-visual-admin__panel" data-ts-bnpl-panel="final-cta" hidden>
 			<h2><?php esc_html_e( 'Final CTA / فراخوان پایانی', 'ts-bnpl' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'با بارگذاری تصویر، این بخش دقیقاً مثل بنر بالای صفحه یک بنر تمام‌عرض لینک‌دار می‌شود و عنوان، توضیح و دکمه باید داخل خود تصویر طراحی شوند. اگر تصویری بارگذاری نشود، همان کارت متنی سرمه‌ای با دکمه نمایش داده می‌شود.', 'ts-bnpl' ); ?></p>
 			<?php self::text_field( 'ts_bnpl_visual[final_cta][title]', __( 'عنوان', 'ts-bnpl' ), $section['title'] ); ?>
 			<?php self::textarea_field( 'ts_bnpl_visual[final_cta][description]', __( 'توضیح', 'ts-bnpl' ), $section['description'] ); ?>
 			<div class="ts-bnpl-visual-admin__grid">
 				<?php self::text_field( 'ts_bnpl_visual[final_cta][label]', __( 'متن دکمه', 'ts-bnpl' ), $section['label'] ); ?>
-				<?php self::text_field( 'ts_bnpl_visual[final_cta][url]', __( 'نشانی دکمه', 'ts-bnpl' ), $section['url'], 'url' ); ?>
+				<?php self::text_field( 'ts_bnpl_visual[final_cta][url]', __( 'نشانی مقصد', 'ts-bnpl' ), $section['url'], 'url' ); ?>
 			</div>
-			<p class="description"><?php esc_html_e( 'برای دسکتاپ تصویر محصول‌محور افقی 1250×1000 و برای موبایل ترکیب مستقل 1080×1080 آماده کنید؛ فضای خالی زیاد اطراف محصول نگذارید.', 'ts-bnpl' ); ?></p>
+			<p class="description"><?php esc_html_e( 'در حالت بنری، نشانی بالا مقصد کلیک روی کل بنر است و عنوان/توضیح/متن دکمه فقط برای حالت بدون تصویر و نام دسترس‌پذیر لینک به کار می‌روند. اندازه‌ی تصویر: دسکتاپ 1326×400 و موبایل 1300×975 — دقیقاً مثل بنر بالای صفحه.', 'ts-bnpl' ); ?></p>
 			<?php self::render_media_group( 'ts_bnpl_visual[final_cta][media]', $section['media'] ); ?>
 		</section>
 		<?php

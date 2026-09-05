@@ -185,10 +185,33 @@ test('in-page destinations clear desktop and mobile sticky headers', () => {
   assert.ok(rootRules.some((rule) => rule.atRules.includes(mobileMedia) && rule.declarations['--ts-visual-anchor-offset'] === '112px'));
 });
 
-test('desktop final CTA keeps a 60/40 split and bounded height', () => {
-  const matchingRules = rulesFor('.ts-bnpl-visual-final');
+test('desktop text-only final CTA keeps a 60/40 split and bounded height', () => {
+  const matchingRules = rulesFor('.ts-bnpl-visual-final:not(.ts-bnpl-visual-final--banner)');
   assert.ok(matchingRules.some((rule) => rule.atRules.includes(desktopMedia) && rule.declarations['grid-template-columns'] === 'minmax(0, 3fr) minmax(360px, 2fr)'));
   assert.ok(matchingRules.some((rule) => rule.atRules.includes(desktopMedia) && rule.declarations.height === 'clamp(360px, 28vw, 420px)'));
+
+  // The banner variant must escape that split, otherwise the artwork is cropped into a column.
+  assert.ok(rulesFor('.ts-bnpl-visual-final').every((rule) => !rule.atRules.includes(desktopMedia)));
+});
+
+test('final CTA banner mirrors the top banner ratios', () => {
+  const bannerRules = rulesFor('.ts-bnpl-visual-final--banner');
+  const base = bannerRules.find((rule) => rule.atRules.length === 0);
+  assert.ok(base);
+  assert.equal(base.declarations.display, 'block');
+  assert.equal(base.declarations['aspect-ratio'], '1326 / 400');
+  assert.equal(base.declarations['min-height'], '0');
+
+  const topBase = rulesFor('.ts-bnpl-visual-banner').find((rule) => rule.atRules.length === 0);
+  assert.equal(base.declarations['aspect-ratio'], topBase.declarations['aspect-ratio']);
+
+  const phone = '@media (max-width: 650px)';
+  assert.ok(bannerRules.some((rule) => rule.atRules.includes(phone) && rule.declarations['aspect-ratio'] === '4 / 3'));
+});
+
+test('final CTA banner fills its link wrapper', () => {
+  const linkRules = rulesFor('.ts-bnpl-visual-final--banner .ts-bnpl-visual-final__link');
+  assert.ok(linkRules.some((rule) => rule.declarations.height === '100%' && rule.declarations.width === '100%'));
 });
 
 test('mobile final CTA uses a horizontal artwork crop without a forced desktop height', () => {
