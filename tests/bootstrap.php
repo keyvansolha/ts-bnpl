@@ -299,20 +299,105 @@ function wp_enqueue_media() {
 	$GLOBALS['ts_bnpl_test_media_enqueued'] = true;
 }
 
+/**
+ * رجیستری کمینه‌ی وابستگی‌ها.
+ *
+ * برای بازتولید همان تله‌ای لازم است که مسیر Page قالب می‌سازد: هندلی که از قبل
+ * روی یک فایل دیگر ثبت و صف شده است.
+ */
+class TS_BNPL_Test_Dependencies {
+
+	/** @var array<string,object> */
+	public $registered = array();
+
+	/** @param string $handle @param string $status @return object|false */
+	public function query( $handle, $status = 'registered' ) {
+		unset( $status );
+		return isset( $this->registered[ $handle ] ) ? $this->registered[ $handle ] : false;
+	}
+}
+
+$GLOBALS['ts_bnpl_test_style_registry']  = new TS_BNPL_Test_Dependencies();
+$GLOBALS['ts_bnpl_test_script_registry'] = new TS_BNPL_Test_Dependencies();
+
+function wp_styles() {
+	return $GLOBALS['ts_bnpl_test_style_registry'];
+}
+
+function wp_scripts() {
+	return $GLOBALS['ts_bnpl_test_script_registry'];
+}
+
+function wp_register_style( $handle, $src = '', $deps = array(), $version = false, $media = 'all' ) {
+	$GLOBALS['ts_bnpl_test_style_registry']->registered[ $handle ] = (object) compact( 'handle', 'src', 'deps', 'version', 'media' );
+}
+
+function wp_deregister_style( $handle ) {
+	unset( $GLOBALS['ts_bnpl_test_style_registry']->registered[ $handle ] );
+}
+
+function wp_register_script( $handle, $src = '', $deps = array(), $version = false, $in_footer = false ) {
+	$GLOBALS['ts_bnpl_test_script_registry']->registered[ $handle ] = (object) compact( 'handle', 'src', 'deps', 'version', 'in_footer' );
+}
+
+function wp_deregister_script( $handle ) {
+	unset( $GLOBALS['ts_bnpl_test_script_registry']->registered[ $handle ] );
+}
+
 function wp_enqueue_style( $handle, $src = '', $deps = array(), $version = false, $media = 'all' ) {
+	if ( '' === $src ) {
+		$registered = wp_styles()->query( $handle );
+
+		if ( $registered ) {
+			$src     = $registered->src;
+			$deps    = $registered->deps;
+			$version = $registered->version;
+		}
+	} else {
+		wp_register_style( $handle, $src, $deps, $version, $media );
+	}
+
 	$GLOBALS['ts_bnpl_test_styles'][ $handle ] = compact( 'src', 'deps', 'version', 'media' );
 }
 
 function wp_style_is( $handle, $status = 'enqueued' ) {
+	if ( 'registered' === $status ) {
+		return false !== wp_styles()->query( $handle );
+	}
+
 	return isset( $GLOBALS['ts_bnpl_test_styles'][ $handle ] );
 }
 
 function wp_enqueue_script( $handle, $src = '', $deps = array(), $version = false, $in_footer = false ) {
+	if ( '' === $src ) {
+		$registered = wp_scripts()->query( $handle );
+
+		if ( $registered ) {
+			$src     = $registered->src;
+			$deps    = $registered->deps;
+			$version = $registered->version;
+		}
+	} else {
+		wp_register_script( $handle, $src, $deps, $version, $in_footer );
+	}
+
 	$GLOBALS['ts_bnpl_test_scripts'][ $handle ] = compact( 'src', 'deps', 'version', 'in_footer' );
 }
 
 function wp_script_is( $handle, $status = 'enqueued' ) {
+	if ( 'registered' === $status ) {
+		return false !== wp_scripts()->query( $handle );
+	}
+
 	return isset( $GLOBALS['ts_bnpl_test_scripts'][ $handle ] );
+}
+
+function get_template_directory() {
+	return isset( $GLOBALS['ts_bnpl_test_theme_dir'] ) ? $GLOBALS['ts_bnpl_test_theme_dir'] : '/nonexistent-theme';
+}
+
+function get_template_directory_uri() {
+	return 'https://example.test/theme';
 }
 
 function wp_localize_script( $handle, $name, $data ) {

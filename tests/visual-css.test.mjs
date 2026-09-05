@@ -233,20 +233,36 @@ test('banner bullets and arrows mirror the homepage slider', { skip: themeLoaded
   const bullet = componentDeclarations('body .wbs-slider-controls .swiper-pagination-bullet');
   const ours = Object.assign(
     {},
-    ...rulesFor('.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet').map((rule) => rule.declarations),
+    ...rulesFor('.ts-bnpl-visual-landing .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet')
+      .map((rule) => rule.declarations),
   );
   assert.equal(ours.width, bullet.width);
   assert.equal(ours.height, bullet.height);
-  // Swiper's own 4px gap must survive, so the mirrored rule may not zero the margin.
-  assert.equal(ours.margin, undefined);
 
   /*
-   * The current slide is legible only through Swiper's default .2 inactive
-   * opacity: --secondary-white and --secondary are the same navy in the light
-   * theme. Pinning opacity flattens every bullet and the indicator disappears.
+   * A bullet is a bare <span>. The Swiper bundle stylesheet normally blockifies
+   * it, but the theme page route can leave the handle on its slim build, which
+   * has no pagination rules, so every dot collapses to zero size. These must be
+   * declared here rather than inherited.
    */
-  assert.equal(bullet.opacity, undefined, 'theme component must not pin bullet opacity');
-  assert.equal(ours.opacity, undefined, 'mirrored bullets must not pin opacity');
+  assert.equal(ours.display, 'inline-block', 'bullets must not rely on the Swiper stylesheet to blockify');
+  assert.equal(ours['border-radius'], '50%');
+  assert.equal(ours.margin, '0 4px', 'bullets must carry Swiper default gap themselves');
+
+  /*
+   * The current slide is legible only through opacity: --secondary-white and
+   * --secondary are the same navy in the light theme, so colour alone carries
+   * no information. Inactive must stay visibly dimmer than active.
+   */
+  const active = Object.assign(
+    {},
+    ...rulesFor('.ts-bnpl-visual-landing .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active')
+      .map((rule) => rule.declarations),
+  );
+  assert.ok(Number(ours.opacity) < Number(active.opacity), 'inactive bullets must be dimmer than the active one');
+
+  // The theme component is outscoped on purpose, so its own rule cannot win.
+  assert.equal(bullet.opacity, undefined);
 
   const arrowIcon = componentDeclarations('body .wbs-slider-controls .wbs-slider-btn i');
   const ourIcon = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__control i').map((rule) => rule.declarations));

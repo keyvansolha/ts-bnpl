@@ -254,10 +254,32 @@ class TS_BNPL_Landing {
 		$swiper_css = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.css';
 		$swiper_js  = 'lib/Archive/assets/plugins/swiper/swiper-bundle.min.js';
 
+		/*
+		 * شیت سوایپر هم دقیقاً همان مشکل اسکریپت را دارد.
+		 *
+		 * مسیر Page قالب روی هر برگه‌ی ساده هندل «swiper» را به
+		 * assets/plugins/swiper/swiper.min.css وصل می‌کند و آن فایل هیچ قاعده‌ای
+		 * برای pagination ندارد. چون هندل از قبل در صف بود، شرطِ «اگر صف نشده
+		 * صف کن» هرگز اجرا نمی‌شد و bundle نمی‌آمد؛ در نتیجه
+		 * `.swiper-pagination-bullet` هرگز `display: inline-block` نمی‌گرفت،
+		 * span درون‌خطی می‌ماند، width/height روی آن اثر نداشت و نقطه‌های
+		 * نشانگر اسلاید نامرئی می‌شدند.
+		 *
+		 * پس مثل اسکریپت، خود هندل روی bundle نشانده می‌شود.
+		 */
 		if ( file_exists( $theme_dir . '/' . $swiper_css ) ) {
-			if ( ! wp_style_is( 'swiper', 'enqueued' ) ) {
-				wp_enqueue_style( 'swiper', get_template_directory_uri() . '/' . $swiper_css, array(), TS_BNPL_VERSION );
+			$bundle_css = get_template_directory_uri() . '/' . $swiper_css;
+			$registered = wp_styles()->query( 'swiper', 'registered' );
+
+			if ( $registered && $bundle_css !== $registered->src ) {
+				wp_deregister_style( 'swiper' );
 			}
+
+			if ( ! wp_style_is( 'swiper', 'registered' ) ) {
+				wp_register_style( 'swiper', $bundle_css, array(), TS_BNPL_VERSION );
+			}
+
+			wp_enqueue_style( 'swiper' );
 
 			$deps[] = 'swiper';
 		}

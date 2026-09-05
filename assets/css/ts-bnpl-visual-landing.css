@@ -248,30 +248,43 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	margin-right: 15px;
 }
 
-/*
- * Static inside the pill, so Swiper's own 4px bullet gap applies.
- *
- * Do not set `opacity` here. `--secondary-white` and `--secondary` are the same
- * navy in the light theme, so the current slide is told apart purely by Swiper's
- * default inactive opacity of .2 against the active bullet's 1. Pinning opacity
- * flattens every bullet into one identical dot and the indicator disappears.
- */
+/* Static inside the pill, so the bullets sit between the two arrows. */
 .ts-bnpl-visual-banner__pagination {
 	margin-top: 6px;
 }
 
-.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet {
+/*
+ * Fully self-contained on purpose, and deliberately outscoping the theme's own
+ * `body .wbs-slider-controls .swiper-pagination-bullet`.
+ *
+ * `display` and `border-radius` normally come from the Swiper bundle
+ * stylesheet, but the theme's page route can leave the handle pointing at its
+ * slim `swiper.min.css`, which carries no pagination rules at all. A bullet is a
+ * bare `<span>`, so without `display: inline-block` it stays inline, `width` and
+ * `height` do not apply, and every dot collapses to nothing.
+ *
+ * The two opacities are what tells the current slide apart: `--secondary-white`
+ * and `--secondary` are the same navy in the light theme, so colour alone
+ * carries no information. Those values are Swiper's own defaults, which is what
+ * the homepage banner ends up rendering.
+ */
+.ts-bnpl-visual-landing .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet {
+	display: inline-block;
 	width: 6px;
 	height: 6px;
-	background: var(--secondary-white, var(--ts-visual-navy));
+	margin: 0 4px;
+	border-radius: 50%;
+	background: var(--secondary-white, #002864);
+	opacity: .2;
 	transition-duration: .2s;
 }
 
-.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active {
-	background: var(--secondary, var(--ts-visual-navy));
+.ts-bnpl-visual-landing .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active {
+	background: var(--secondary, #002864);
+	opacity: 1;
 }
 
-.ts-bnpl-visual-banner__pagination.full-bullet .swiper-pagination-bullet-active {
+.ts-bnpl-visual-landing .ts-bnpl-visual-banner__pagination.full-bullet .swiper-pagination-bullet-active {
 	width: 21px;
 	border-radius: 20px;
 }
