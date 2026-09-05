@@ -248,7 +248,14 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	margin-right: 15px;
 }
 
-/* Static inside the pill; Swiper's own bullet gap and centring then apply. */
+/*
+ * Static inside the pill, so Swiper's own 4px bullet gap applies.
+ *
+ * Do not set `opacity` here. `--secondary-white` and `--secondary` are the same
+ * navy in the light theme, so the current slide is told apart purely by Swiper's
+ * default inactive opacity of .2 against the active bullet's 1. Pinning opacity
+ * flattens every bullet into one identical dot and the indicator disappears.
+ */
 .ts-bnpl-visual-banner__pagination {
 	margin-top: 6px;
 }
@@ -256,13 +263,17 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet {
 	width: 6px;
 	height: 6px;
-	background: var(--secondary-white, var(--ts-visual-border));
-	opacity: 1;
+	background: var(--secondary-white, var(--ts-visual-navy));
 	transition-duration: .2s;
 }
 
 .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active {
 	background: var(--secondary, var(--ts-visual-navy));
+}
+
+.ts-bnpl-visual-banner__pagination.full-bullet .swiper-pagination-bullet-active {
+	width: 21px;
+	border-radius: 20px;
 }
 
 /* Hero */

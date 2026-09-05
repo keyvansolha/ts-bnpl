@@ -167,23 +167,40 @@ function rulesFor(selector) {
 }
 
 /*
- * The homepage banner chrome lives in the theme's `home.css`, which is enqueued
- * only on the front page. These rules are mirrored into the plugin stylesheet,
- * so pin them against the theme source and fail loudly when the theme moves.
+ * `.wbs-slider-controls` is the theme's shared slider component. The plugin
+ * mirrors it because neither source that carries it is guaranteed on this page:
+ * `home.css` is front-page only, and the mobile archive build ships no copy at
+ * all. Pin the mirror against both theme sources so a theme edit fails here.
  */
-const themeCssUrl = new URL('../../../themes/amazing/lib/home/assets/scss/home.css', import.meta.url);
-const themeRules = fs.existsSync(themeCssUrl)
-  ? parseRuleList(fs.readFileSync(themeCssUrl, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
-  : null;
+function loadTheme(relativePath) {
+  const url = new URL(relativePath, import.meta.url);
+  return fs.existsSync(url)
+    ? parseRuleList(fs.readFileSync(url, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+    : null;
+}
 
-function themeDeclarations(selector) {
-  const matched = themeRules.filter((rule) => rule.selectors.includes(selector));
+// The component itself, from the archive build that loads beside the landing.
+const componentRules = loadTheme('../../../themes/amazing/lib/Archive/assets/scss/archiveModular.css');
+// Its placement inside a banner (absolute pill plus notched corners).
+const themeRules = loadTheme('../../../themes/amazing/lib/home/assets/scss/home.css');
+const themeLoaded = componentRules && themeRules;
+
+function declarationsIn(ruleList, selector) {
+  const matched = ruleList.filter((rule) => rule.selectors.includes(selector));
   assert.ok(matched.length > 0, `theme rule missing: ${selector}`);
   return Object.assign({}, ...matched.map((rule) => rule.declarations));
 }
 
-test('banner controls mirror the homepage slider pill', { skip: themeRules ? false : 'theme not present' }, () => {
-  const pill = themeDeclarations('body.home .wbs-slider-controls');
+function themeDeclarations(selector) {
+  return declarationsIn(themeRules, selector);
+}
+
+function componentDeclarations(selector) {
+  return declarationsIn(componentRules, selector);
+}
+
+test('banner controls mirror the homepage slider pill', { skip: themeLoaded ? false : 'theme not present' }, () => {
+  const pill = componentDeclarations('body .wbs-slider-controls');
   const ours = Object.assign(
     {},
     ...rulesFor('.ts-bnpl-visual-banner__controls')
@@ -212,8 +229,8 @@ test('banner controls mirror the homepage slider pill', { skip: themeRules ? fal
   }
 });
 
-test('banner bullets and arrows mirror the homepage slider', { skip: themeRules ? false : 'theme not present' }, () => {
-  const bullet = themeDeclarations('body.home .wbs-slider-controls .swiper-pagination-bullet');
+test('banner bullets and arrows mirror the homepage slider', { skip: themeLoaded ? false : 'theme not present' }, () => {
+  const bullet = componentDeclarations('body .wbs-slider-controls .swiper-pagination-bullet');
   const ours = Object.assign(
     {},
     ...rulesFor('.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet').map((rule) => rule.declarations),
@@ -223,19 +240,27 @@ test('banner bullets and arrows mirror the homepage slider', { skip: themeRules 
   // Swiper's own 4px gap must survive, so the mirrored rule may not zero the margin.
   assert.equal(ours.margin, undefined);
 
-  const arrowIcon = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn i');
+  /*
+   * The current slide is legible only through Swiper's default .2 inactive
+   * opacity: --secondary-white and --secondary are the same navy in the light
+   * theme. Pinning opacity flattens every bullet and the indicator disappears.
+   */
+  assert.equal(bullet.opacity, undefined, 'theme component must not pin bullet opacity');
+  assert.equal(ours.opacity, undefined, 'mirrored bullets must not pin opacity');
+
+  const arrowIcon = componentDeclarations('body .wbs-slider-controls .wbs-slider-btn i');
   const ourIcon = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__control i').map((rule) => rule.declarations));
   assert.equal(ourIcon['font-size'], arrowIcon['font-size']);
 
-  const prev = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn.wbs-slider-prev');
-  const next = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn.wbs-slider-next');
+  const prev = componentDeclarations('body .wbs-slider-controls .wbs-slider-btn.wbs-slider-prev');
+  const next = componentDeclarations('body .wbs-slider-controls .wbs-slider-btn.wbs-slider-next');
   const ourPrev = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__prev').map((rule) => rule.declarations));
   const ourNext = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__next').map((rule) => rule.declarations));
   assert.equal(ourPrev['margin-left'], prev['margin-left']);
   assert.equal(ourNext['margin-right'], next['margin-right']);
 });
 
-test('banner box mirrors the homepage slider height floors', { skip: themeRules ? false : 'theme not present' }, () => {
+test('banner box mirrors the homepage slider height floors', { skip: themeLoaded ? false : 'theme not present' }, () => {
   const floorsOf = (ruleList) => ruleList
     .filter((rule) => rule.declarations['min-height'])
     .map((rule) => rule.declarations['min-height']);
