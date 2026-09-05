@@ -142,16 +142,15 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	font-size: clamp(15px, 1.5vw, 19px) !important;
 }
 
-/* Top promotional banner: exact homepage display ratios. */
+/* Top promotional banner: the homepage `.home-slider` box, one-to-one. */
 .ts-bnpl-visual-banner {
 	position: relative;
 	overflow: hidden;
 	width: 100%;
+	min-height: 400px;
 	aspect-ratio: 1326 / 400;
-	border: 1px solid var(--ts-visual-border);
 	border-radius: var(--ts-visual-radius);
 	background: var(--ts-visual-soft);
-	box-shadow: var(--ts-visual-shadow);
 }
 
 .ts-bnpl-visual-banner__track {
@@ -176,60 +175,94 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-landing img {
 	object-position: center;
 }
 
-.ts-bnpl-visual-banner__control {
+/*
+ * Arrows and bullets share one pill notched into the bottom edge, exactly like
+ * the theme's `.wbs-slider-controls`. That component lives in `home.css`, which
+ * is homepage-only, so the rules are mirrored here rather than depended on.
+ */
+.ts-bnpl-visual-banner__controls {
 	position: absolute;
-	z-index: 3;
-	top: 50%;
-	display: grid;
-	place-items: center;
-	width: 44px;
-	height: 44px;
-	padding: 0;
-	border: 1px solid rgb(255 255 255 / 68%);
-	border-radius: 50%;
-	background: rgb(0 40 100 / 76%);
-	box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
-	color: #fff;
-	cursor: pointer;
-	transform: translateY(-50%);
-	transition: background-color .2s ease, transform .2s ease;
+	z-index: 2;
+	inset-inline: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: fit-content;
+	height: 45px;
+	margin: 0 auto;
+	padding: 0 20px;
+	border-radius: 20px 20px 0 0;
+	background: var(--body-bg, var(--ts-visual-surface));
 }
 
-.ts-bnpl-visual-banner__control:hover {
-	background: var(--ts-visual-navy);
+/* The two concave corners that blend the pill into the banner edge. */
+.ts-bnpl-visual-banner__controls::before,
+.ts-bnpl-visual-banner__controls::after {
+	position: absolute;
+	width: 25px;
+	height: 26px;
+	border-bottom: 8px solid var(--body-bg, var(--ts-visual-surface));
+	background: none;
+	content: "";
+}
+
+.ts-bnpl-visual-banner__controls::before {
+	top: 26px;
+	right: -16.4px;
+	border-left: 8px solid var(--body-bg, var(--ts-visual-surface));
+	border-radius: 0 0 0 39px;
+	transform: rotate(3deg);
+}
+
+.ts-bnpl-visual-banner__controls::after {
+	top: 27.2px;
+	left: -17px;
+	border-right: 8px solid var(--body-bg, var(--ts-visual-surface));
+	border-radius: 0 0 39px 0;
+}
+
+.ts-bnpl-visual-banner__control {
+	display: block;
+	margin-top: 10px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+
+.ts-bnpl-visual-banner__control i {
+	color: var(--secondary, var(--ts-visual-navy));
+	font-size: 12px;
+}
+
+.ts-bnpl-visual-banner__control.swiper-button-disabled {
+	opacity: .2;
 }
 
 .ts-bnpl-visual-banner__prev {
-	inset-inline-start: 18px;
+	margin-left: 15px;
 }
 
 .ts-bnpl-visual-banner__next {
-	inset-inline-end: 18px;
+	margin-right: 15px;
 }
 
+/* Static inside the pill; Swiper's own bullet gap and centring then apply. */
 .ts-bnpl-visual-banner__pagination {
-	position: absolute;
-	z-index: 3;
-	inset-inline: 0;
-	bottom: 14px !important;
-	display: flex;
-	justify-content: center;
-	gap: 7px;
+	margin-top: 6px;
 }
 
 .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet {
-	width: 9px;
-	height: 9px;
-	margin: 0 !important;
-	background: #fff;
-	opacity: .58;
+	width: 6px;
+	height: 6px;
+	background: var(--secondary-white, var(--ts-visual-border));
+	opacity: 1;
+	transition-duration: .2s;
 }
 
 .ts-bnpl-visual-banner__pagination .swiper-pagination-bullet-active {
-	width: 28px;
-	border-radius: 999px;
-	background: var(--ts-visual-accent);
-	opacity: 1;
+	background: var(--secondary, var(--ts-visual-navy));
 }
 
 /* Hero */
@@ -697,6 +730,14 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 }
 
 @media (max-width: 991.98px) {
+	.ts-bnpl-visual-banner {
+		min-height: 360px;
+	}
+
+	.ts-bnpl-visual-banner__controls {
+		bottom: -1px;
+	}
+
 	.ts-bnpl-visual-hero {
 		grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
 		min-height: 460px;
@@ -726,8 +767,8 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 		padding-block-start: 4px;
 	}
 
-	.ts-bnpl-visual-banner__control {
-		display: none;
+	.ts-bnpl-visual-banner {
+		min-height: 252px;
 	}
 
 	.ts-bnpl-visual-hero,
@@ -840,11 +881,6 @@ body.ts-bnpl-visual-landing-page .page-content .ts-bnpl-visual-final :is(h2, p) 
 	.ts-bnpl-visual-banner,
 	.ts-bnpl-visual-final--banner {
 		aspect-ratio: 4 / 3;
-		border-radius: 16px;
-	}
-
-	.ts-bnpl-visual-banner__pagination {
-		bottom: 10px !important;
 	}
 }
 

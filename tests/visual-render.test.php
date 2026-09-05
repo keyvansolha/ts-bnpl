@@ -127,6 +127,13 @@ foreach ( $ordered as $marker ) {
 }
 
 ts_test_assert_contains( 'data-slide-count="2"', $html, 'multiple valid top banners form one carousel' );
+ts_test_assert_contains( '<div class="wbs-slider-controls ts-bnpl-visual-banner__controls">', $html, 'banner arrows and bullets share the theme slider pill' );
+ts_test_assert_contains( '<div class="wbs-slider-pagination ts-bnpl-visual-banner__pagination"', $html, 'banner pagination sits inside the pill, between the arrows' );
+ts_test_assert_true(
+	strpos( $html, 'ts-bnpl-visual-banner__prev' ) < strpos( $html, 'ts-bnpl-visual-banner__pagination' )
+		&& strpos( $html, 'ts-bnpl-visual-banner__pagination' ) < strpos( $html, 'ts-bnpl-visual-banner__next' ),
+	'pill order matches the homepage: previous arrow, bullets, next arrow'
+);
 ts_test_assert_same( 1, substr_count( $html, 'data-ts-bnpl-visual-banner' ), 'only the top marketing media is a slider' );
 ts_test_assert_contains( 'theme/images/logo.svg', $html, 'Hero reuses the existing rotating SVG' );
 ts_test_assert_same( 4, substr_count( $html, 'ts-bnpl-visual-steps__item' ), 'purchase flow keeps exactly four steps' );

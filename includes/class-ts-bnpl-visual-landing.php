@@ -164,9 +164,11 @@ class TS_BNPL_Visual_Landing {
 				<?php endforeach; ?>
 			</div>
 			<?php if ( $count > 1 ) : ?>
-				<button type="button" class="ts-bnpl-visual-banner__control ts-bnpl-visual-banner__prev" aria-label="<?php esc_attr_e( 'بنر قبلی', 'ts-bnpl' ); ?>"><i class="icon-arrow-right" aria-hidden="true"></i></button>
-				<button type="button" class="ts-bnpl-visual-banner__control ts-bnpl-visual-banner__next" aria-label="<?php esc_attr_e( 'بنر بعدی', 'ts-bnpl' ); ?>"><i class="icon-arrow-left" aria-hidden="true"></i></button>
-				<div class="ts-bnpl-visual-banner__pagination" aria-label="<?php esc_attr_e( 'انتخاب بنر', 'ts-bnpl' ); ?>"></div>
+				<div class="wbs-slider-controls ts-bnpl-visual-banner__controls">
+					<button type="button" class="wbs-slider-btn wbs-slider-prev ts-bnpl-visual-banner__control ts-bnpl-visual-banner__prev" aria-label="<?php esc_attr_e( 'بنر قبلی', 'ts-bnpl' ); ?>"><i class="icon-arrow-right" aria-hidden="true"></i></button>
+					<div class="wbs-slider-pagination ts-bnpl-visual-banner__pagination" aria-label="<?php esc_attr_e( 'انتخاب بنر', 'ts-bnpl' ); ?>"></div>
+					<button type="button" class="wbs-slider-btn wbs-slider-next ts-bnpl-visual-banner__control ts-bnpl-visual-banner__next" aria-label="<?php esc_attr_e( 'بنر بعدی', 'ts-bnpl' ); ?>"><i class="icon-arrow-left" aria-hidden="true"></i></button>
+				</div>
 			<?php endif; ?>
 		</section>
 		<?php

@@ -166,6 +166,92 @@ function rulesFor(selector) {
   return rules.filter((rule) => rule.selectors.includes(selector));
 }
 
+/*
+ * The homepage banner chrome lives in the theme's `home.css`, which is enqueued
+ * only on the front page. These rules are mirrored into the plugin stylesheet,
+ * so pin them against the theme source and fail loudly when the theme moves.
+ */
+const themeCssUrl = new URL('../../../themes/amazing/lib/home/assets/scss/home.css', import.meta.url);
+const themeRules = fs.existsSync(themeCssUrl)
+  ? parseRuleList(fs.readFileSync(themeCssUrl, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''))
+  : null;
+
+function themeDeclarations(selector) {
+  const matched = themeRules.filter((rule) => rule.selectors.includes(selector));
+  assert.ok(matched.length > 0, `theme rule missing: ${selector}`);
+  return Object.assign({}, ...matched.map((rule) => rule.declarations));
+}
+
+test('banner controls mirror the homepage slider pill', { skip: themeRules ? false : 'theme not present' }, () => {
+  const pill = themeDeclarations('body.home .wbs-slider-controls');
+  const ours = Object.assign(
+    {},
+    ...rulesFor('.ts-bnpl-visual-banner__controls')
+      .filter((rule) => rule.atRules.length === 0)
+      .map((rule) => rule.declarations),
+  );
+
+  for (const property of ['display', 'align-items', 'justify-content', 'padding', 'width', 'height', 'border-radius', 'margin']) {
+    assert.equal(ours[property], pill[property], `banner pill ${property} drifted from the homepage`);
+  }
+  assert.equal(ours.background, 'var(--body-bg, var(--ts-visual-surface))');
+  assert.equal(ours.bottom, pill.bottom);
+
+  // The two concave corners are pure magic numbers; drift here is invisible in review.
+  const notch = (side) => themeDeclarations(
+    `body.home .top-banner-panel .home-slider .home-slider-controls:not(.is-full):${side}`,
+  );
+  const ourNotch = (side) => Object.assign(
+    {},
+    ...rulesFor(`.ts-bnpl-visual-banner__controls::${side}`).map((rule) => rule.declarations),
+  );
+  for (const [side, edge] of [['before', 'right'], ['after', 'left']]) {
+    assert.equal(ourNotch(side).top, notch(side).top, `notch ${side} top drifted`);
+    assert.equal(ourNotch(side)[edge], notch(side)[edge], `notch ${side} ${edge} drifted`);
+    assert.equal(ourNotch(side)['border-radius'], notch(side)['border-radius'], `notch ${side} radius drifted`);
+  }
+});
+
+test('banner bullets and arrows mirror the homepage slider', { skip: themeRules ? false : 'theme not present' }, () => {
+  const bullet = themeDeclarations('body.home .wbs-slider-controls .swiper-pagination-bullet');
+  const ours = Object.assign(
+    {},
+    ...rulesFor('.ts-bnpl-visual-banner__pagination .swiper-pagination-bullet').map((rule) => rule.declarations),
+  );
+  assert.equal(ours.width, bullet.width);
+  assert.equal(ours.height, bullet.height);
+  // Swiper's own 4px gap must survive, so the mirrored rule may not zero the margin.
+  assert.equal(ours.margin, undefined);
+
+  const arrowIcon = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn i');
+  const ourIcon = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__control i').map((rule) => rule.declarations));
+  assert.equal(ourIcon['font-size'], arrowIcon['font-size']);
+
+  const prev = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn.wbs-slider-prev');
+  const next = themeDeclarations('body.home .wbs-slider-controls .wbs-slider-btn.wbs-slider-next');
+  const ourPrev = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__prev').map((rule) => rule.declarations));
+  const ourNext = Object.assign({}, ...rulesFor('.ts-bnpl-visual-banner__next').map((rule) => rule.declarations));
+  assert.equal(ourPrev['margin-left'], prev['margin-left']);
+  assert.equal(ourNext['margin-right'], next['margin-right']);
+});
+
+test('banner box mirrors the homepage slider height floors', { skip: themeRules ? false : 'theme not present' }, () => {
+  const floorsOf = (ruleList) => ruleList
+    .filter((rule) => rule.declarations['min-height'])
+    .map((rule) => rule.declarations['min-height']);
+
+  const themeBox = themeRules.filter((rule) => rule.selectors.includes('body.home .top-banner-panel .home-slider'));
+  const ourBox = rulesFor('.ts-bnpl-visual-banner');
+
+  assert.deepEqual(floorsOf(ourBox), floorsOf(themeBox));
+
+  const base = ourBox.find((rule) => rule.atRules.length === 0);
+  assert.equal(base.declarations['border-radius'], 'var(--ts-visual-radius)');
+  // The homepage slider carries no border or shadow; neither may this one.
+  assert.equal(base.declarations.border, undefined);
+  assert.equal(base.declarations['box-shadow'], undefined);
+});
+
 test('banner track preserves Swiper horizontal layout', () => {
   const matchingRules = rulesFor('.ts-bnpl-visual-banner__track');
   assert.ok(matchingRules.length > 0);
